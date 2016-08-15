@@ -117,3 +117,96 @@ Sample show resource using parameters and query string.
                 name: "John",
                 age: 32
             }
+
+## Registro precário [/v1/nfe/recebiveis/precario-register]
+
+### Solicitação de registro precário em lote [POST]
+Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
++ Request (application/json)
+
+        {
+            "agent_id": 3,
+            "[recebiveis]": [
+                {
+                    "[cedente]_cnpj": "CNPJ",
+                    "[sacado]_cnpj": "CNPJ",
+                    "document_number": 999,
+                    "value_in_cents": 23,
+                    "expiration_date":  "12/12/2016"
+                }
+            ]
+        }
+
++ Response 202 (application/json)
+
+        {
+            "protocol": 12312312,
+            "message": "O lote foi aceito e será processado."
+        }
++ Response 422 (application/json)
+
+        {
+            "message": "Formato inválido.",
+            "error_code": 1
+        }
+
+### Status da solicitação de registro precário em lote [GET /v1/nfe/[recebiveis]/registers/{protocolo}/status]
+Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
++ Parameters
+    + protocolo (number) - Protocolo da solicitação de registro
+
++ Response 200 (application/json)
+
+        {
+            "protocol": 12312312,
+            "status_code": 0,
+            "status_message": "...",
+            "[processamentos_de_registros_precarios]": [
+                {
+                    "[cedente]_cnpj": "CNPJ",
+                    "[sacado]_cnpj": "CNPJ",
+                    "document_number": 999,
+                    "value_in_cents": 23,
+                    "expiration_date": "12/12/2016",
+                    "status_code": 123,
+                    "status_message": "...",
+                    "[precario]_register_id": "mongo_id | null"
+                }
+            ]
+        }
+
++ Response 404 (application/json)
+
+        {
+            "message": "Formato inválido.",
+            "error_code": 1
+        }
+
+### Consulta de registros precários em lote [GET /v1/nfe/[recebiveis]/[precario]-registers]
+Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
++ Response 200 (application/json)
+
+        [
+            {
+                "id": "mongo_id",
+                "agent_id": "mongo_id",
+                "[sacado]_cnpj": "CNPJ",
+                "[cedente]_cnpj": "CNPJ",
+                "[matricula|recebível]_id": "[id único]",
+                "value_in_cents": 123123,
+                "expiration_date": "12/12/2016",
+                "document_number": "1000-A"
+          }
+        ]
+
++ Response 404 (application/json)
+
+        {
+            "message": "Formato inválido.",
+            "error_code": 1
+        }
