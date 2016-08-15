@@ -13,7 +13,7 @@ This is a sample text that must be replaced to an introduction to the api.
     + foo (boolean, required) - an important parameter to specify the severity of the query
         + Default: false
 
-    + bar (string) - useless parameter
+    + bar (string, optional) - useless parameter
 
 + Response 200 (application/json)
 
@@ -83,4 +83,12 @@ form of choices.
                         "votes": 0
                     }
                 ]
+            }
+
++ Response 401 (application/json)
+
+    + Body
+
+            {
+                "message": "Missing authentication token."
             }
