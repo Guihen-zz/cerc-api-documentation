@@ -9,12 +9,6 @@ This is a sample text that must be replaced to an introduction to the api.
 
 ### List All Questions [GET]
 
-+ Parameters
-    + foo (boolean, required) - an important parameter to specify the severity of the query
-        + Default: false
-
-    + bar (string, optional) - useless parameter
-
 + Response 200 (application/json)
 
         [
@@ -94,26 +88,30 @@ form of choices.
             }
 
 
-## Group User
+## Users resource [/users/{user_id}{?foo,bar}]
 
 Another group sample.
 
-### [GET] [/users/{user_id}]
+### Show an user information [GET]
 
 Sample show resource.
 
 + Parameters
-    + user_id: (number) - the user id
+    + user_id (number) - the user id
+
+    + foo (boolean, required) - an important parameter to specify the severity of the query
+
+    + bar (string, optional) - useless parameter
+        + default: 'anything'
+
 
 
 + Response 200 (application/json)
 
 
-        + Body
+    + Body
 
-                {
-                    name: "John",
-                    age: 32
-                }
-
-
+            {
+                name: "John",
+                age: 32
+            }
