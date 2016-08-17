@@ -5,108 +5,153 @@ HOST: http://cerc-api-staging.herokuapp.com/
 
 This is a sample text that must be replaced to an introduction to the api.
 
-## Questions Collection [/questions]
+## Registro de Recebíveis [/v1/nfe/recebiveis/registers]
 
-### List All Questions [GET]
+Este endpoint só trabalhará com duplicatas de NFe.
 
-Some description here.
+### Listar recebíveis registrados [GET]
+
+Lista todos os recebíveis registrados.
 
 + Response 200 (application/json)
 
         [
             {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 2048
-                    }, {
-                        "choice": "Python",
-                        "votes": 1024
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 512
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 256
-                    }
-                ]
+                id: "57b2285b5192b47bb6c5272b",
+                agent_id: "57b2285b5192b47bb6c5272c",
+                drawee_id: "57b2285b5192b47bb6c5272d",
+                transferor_id: "57b2285b5192b47bb6c5272e",
+                value_in_cents: 123131,
+                recebivel_id: "57b2285b5192b47bb6c5272f",
+                due_date: "12/03/2016",
+                nfe_key: "231321421421421412412421",
+                document_number: "1000-A",
+            },
+            {
+                id: "58b2285b5192b47bb6c5272b",
+                agent_id: "58b2285b5192b47bb6c5272c",
+                drawee_id: "58b2285b5192b47bb6c5272d",
+                transferor_id: "58b2285b5192b47bb6c5272e",
+                value_in_cents: 123131,
+                recebivel_id: "58b2285b5192b47bb6c5272f",
+                due_date: "12/04/2016",
+                nfe_key: "231321421421421412412421",
+                document_number: "1000-B",
             }
         ]
 
-### Create a New Question [POST]
+### Solicitar registro definitivo de recebíveis [POST]
 
-You may create your own question using this action. It takes a JSON
-object containing a question and a collection of answers in the
-form of choices.
+Recebe um conjunto de duplicatas (chave da NFe, id da duplicata, valor da duplicata, data de vencimento)
+e as registra em nome de um agente.
 
 + Request (application/json)
 
         {
-            "question": "Favourite programming language?",
-            "choices": [
-                "Swift",
-                "Python",
-                "Objective-C",
-                "Ruby"
+            "agent_id": "58b2285b5192b47bb6c5272c",
+            "recebiveis": [
+                {
+                    "nfe_key": "231321421421421412412421",
+                    "duplicates": [
+                        {
+                            "document_number": "1000-A",
+                            "value_in_cents": 21313213,
+                            "due_date": "12/11/2016"
+                        },
+                        {
+                            "document_number": "1000-B",
+                            "value_in_cents": 21313213,
+                            "due_date": "12/12/2016"
+                        }
+                    ]
+                }
             ]
         }
 
-+ Response 201 (application/json)
-
-    + Headers
-
-            Location: /questions/2
++ Response 202 (application/json)
 
     + Body
 
             {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 0
-                    }, {
-                        "choice": "Python",
-                        "votes": 0
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 0
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 0
-                    }
-                ]
+                protocol: 1231321313131,
+                message: "O lote foi aceito e será processado",
             }
 
-+ Response 401 (application/json)
++ Request (application/json)
+
+        {
+            "agent_id": "58b2285b5192b47bb6c5272c",
+            "recebiveis": [
+                {
+                    "nfe_key": "231321421421421412412421",
+                    "duplicates": [
+                        {
+                            "document_number": "1000-A",
+                            "value_in_cents": 21313213,
+                            "due_date": "12/11/2016"
+                        },
+                        {
+                            "document_number": "1000-B",
+                            "value_in_cents": 21313213,
+                            "due_date": "12/12/2016"
+                        }
+                }
+            ]
+        }
+
++ Response 422 (application/json)
 
     + Body
 
             {
-                "message": "Missing authentication token."
+                error_message: "Formato inválido.",
+                error_code: 1
+            }
+
++ Request (application/json)
+
+        {
+            "agent_id": "1",
+            "recebiveis": [
+                {
+                    "nfe_key": "231321421421421412412421",
+                    "duplicates": [
+                        {
+                            "document_number": "1000-A",
+                            "value_in_cents": 21313213,
+                            "due_date": "12/11/2016"
+                        },
+                        {
+                            "document_number": "1000-B",
+                            "value_in_cents": 21313213,
+                            "due_date": "12/12/2016"
+                        }
+                    ]
+                }
+            ]
+        }
+
++ Response 422 (application/json)
+
+    + Body
+
+            {
+                error_message: "O agente fornecido não existe.",
+                error_code: 2
             }
 
 
-## Users resource [/users/{user_id}{?foo,bar}]
+## Status da Solicitação de registro definitivo [/v1/nfe/recebiveis/{protocol}/status]
 
-Another group sample.
+Endpoint para realizar pulling das informações relacionadas a um lote de
+recebíveis em processo de registro.
 
-### Show an user information [GET]
+### Ver status [GET]
 
-Sample show resource using parameters and query string.
+Retorna o status do processo de registro de cada recebivel no lote enviado.
 
 + Parameters
-    + user_id (number) - the user id
-
-    + foo (boolean, required) - an important parameter to specify the severity of the query
-
-    + bar (string, optional) - useless parameter
-        + default: 'anything'
-
-
+    + protocol (number) - o número do protocolo fornecido na solicitação de registro
 
 + Response 200 (application/json)
 
@@ -114,6 +159,44 @@ Sample show resource using parameters and query string.
     + Body
 
             {
-                name: "John",
-                age: 32
+                protocol: 1312321,
+                lote_status_code: 003,
+                status_message: "Em processamento",
+                processamento_de_recebiveis: [
+                    {
+                        nfe_key: "123123123213",
+                        document_number: "1000-A",
+                        status_code: 123,
+                        register_id: "57b2285b5192b47bb6c5272d"
+
+                    },
+                    {
+                        nfe_key: "123123123213",
+                        document_number: "1000-B",
+                        status_code: 124,
+                        register_id: "57b2285b5192b47bb6c5272e"
+
+                    }
+                ]
+            }
+
+
+## Nested section [/bla/sayhi]
+
+This is a sample nested section
+
+### Sample nested request [POST]
+
++ Request (application/json)
+
+        {
+            "message": "Hello my friend"
+        }
+
+
++ Response 201 (application/json)
+
+    + Body
+
+            {
             }
