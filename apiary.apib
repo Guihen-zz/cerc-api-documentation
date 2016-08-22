@@ -515,7 +515,8 @@ Pendente de especificação.
 
 ## Registro Provisório de Operações com Duplicata Mercantil [/v1/registro-provisorio-de-operacao-duplicata-mercantil]
 
-Description
+O Registro provisório de uma operação com duplicata mercantil é para os casos em que o agente decide performar uma operação financeira com lastro em um documento fiscal do qual ainda não possui a chave da nota fiscal, mas deseja reservar para si o direito imediatamente, com a atualização posterior do registro da operação, no momento em que for informado sobre a chave da nota.
+O registro provisório tem caráter transitório e não atesta a qualidade do recebível, mas apenas procura garantir a unicidade da posse do registro de uma operação sobre ele.
 
 ### Registro provisório de operações com duplicata mercantil [POST]
 
@@ -531,6 +532,7 @@ Pendente de especificação
 
 ## Atualização de um registro provisório de duplicata de NF-e [/registro-provisorio-em-lote/promover]
 
+A atualização de um registro provisório de uma operação com duplicata mercantil faz a associação de um ou mais recebíveis que possuam registros provisórios a uma ou mais NF-e que são a comprovação da operação que serve de lastro para a operação financeira
 
 ### Solicitação de promoção de registros provisorios em lote [POST]
 
