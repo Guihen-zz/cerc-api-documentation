@@ -5,115 +5,646 @@ HOST: http://cerc-api-staging.herokuapp.com/
 
 This is a sample text that must be replaced to an introduction to the api.
 
-## Questions Collection [/questions]
+## Registro precário [/v1/nfe/recebiveis/precario-register]
 
-### List All Questions [GET]
+### Solicitação de registro precário em lote [POST]
+Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
++ Request (application/json)
 
-Some description here.
+        {
+            "agent_id": 3,
+            "[recebiveis]": [
+                {
+                    "[cedente]_cnpj": "CNPJ",
+                    "[sacado]_cnpj": "CNPJ",
+                    "document_number": 999,
+                    "value_in_cents": 23,
+                    "expiration_date":  "12/12/2016"
+                }
+            ]
+        }
+
++ Response 202 (application/json)
+
+        {
+            "protocol": 12312312,
+            "message": "O lote foi aceito e será processado."
+        }
++ Response 422 (application/json)
+
+        {
+            "message": "Formato inválido.",
+            "error_code": 1
+        }
+
+### Status da solicitação de registro precário em lote [GET /v1/nfe/[recebiveis]/registers/{protocolo}/status]
+Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
++ Parameters
+    + protocolo (number) - Protocolo da solicitação de registro
+
++ Response 200 (application/json)
+
+        {
+            "protocol": 12312312,
+            "status_code": 0,
+            "status_message": "...",
+            "[processamentos_de_registros_precarios]": [
+                {
+                    "[cedente]_cnpj": "CNPJ",
+                    "[sacado]_cnpj": "CNPJ",
+                    "document_number": 999,
+                    "value_in_cents": 23,
+                    "expiration_date": "12/12/2016",
+                    "status_code": 123,
+                    "status_message": "...",
+                    "[precario]_register_id": "mongo_id | null"
+                }
+            ]
+        }
+
++ Response 404 (application/json)
+
+        {
+            "message": "Formato inválido.",
+            "error_code": 1
+        }
+
+### Consulta de registros precários em lote [GET /v1/nfe/[recebiveis]/[precario]-registers]
+Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
 + Response 200 (application/json)
 
         [
             {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 2048
-                    }, {
-                        "choice": "Python",
-                        "votes": 1024
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 512
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 256
-                    }
-                ]
-            }
+                "id": "mongo_id",
+                "agent_id": "mongo_id",
+                "[sacado]_cnpj": "CNPJ",
+                "[cedente]_cnpj": "CNPJ",
+                "[matricula|recebível]_id": "[id único]",
+                "value_in_cents": 123123,
+                "expiration_date": "12/12/2016",
+                "document_number": "1000-A"
+          }
         ]
 
-### Create a New Question [POST]
-
-You may create your own question using this action. It takes a JSON
-object containing a question and a collection of answers in the
-form of choices.
-
-+ Request (application/json)
++ Response 404 (application/json)
 
         {
-            "question": "Favourite programming language?",
-            "choices": [
-                "Swift",
-                "Python",
-                "Objective-C",
-                "Ruby"
-            ]
+            "message": "Formato inválido.",
+            "error_code": 1
         }
 
-+ Response 201 (application/json)
+## Validação de NF-e [/v1/validacao-nfe-em-lote]
 
-    + Headers
+### Validação de NF-e em lote [POST]
 
-            Location: /questions/2
++ Request (application/xml)
 
-    + Body
+        <xml>
+            <agentId>123123</agentId>
+            <nfeLote>
+                <nfe>123</nfe>
+                <nfe>4234</nfe>
+            </nfeLote>
+        </xml>
 
-            {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 0
-                    }, {
-                        "choice": "Python",
-                        "votes": 0
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 0
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 0
-                    }
-                ]
-            }
-
-+ Response 401 (application/json)
++ Response 200 (application/xml)
+    Em caso de sucesso
 
     + Body
 
-            {
-                "message": "Missing authentication token."
-            }
+            <xml>
+                <protocolo>123123123</protocolo>
+                <mensagem>Solicitação de validação aceita.</mensagem>
+            </xml>
 
++ Response 400 (application/xml)
+    Formato inválido
 
-## Users resource [/users/{user_id}{?foo,bar}]
+    + Body
 
-Another group sample.
+            <xml>
+                <codigoDeErro>1</codigoDeErro>
+                <mensagem>Formato inválido</mensagem>
+            </xml>
 
-### Show an user information [GET]
++ Response 404 (application/xml)
+    Agente não existe
 
-Sample show resource using parameters and query string.
+    + Body
+
+            <xml>
+                <codigoDeErro>2</codigoDeErro>
+                <mensagem>Agente não cadastrado.</mensagem>
+            </xml>
+
+### Consulta de Status de validação de NF-e [GET /v1/validacao-nfe-em-lote/{protocolo}]
 
 + Parameters
-    + user_id (number) - the user id
+    + protocolo (number) - Protocolo da solicitação da validação
 
-    + foo (boolean, required) - an important parameter to specify the severity of the query
++ Response 200 (application/xml)
+    Em caso de sucesso
 
-    + bar (string, optional) - useless parameter
-        + default: 'anything'
+    + Body
+
+            <xml>
+                <dataDeSolicitacao>12/02/2016</dataDeSolicitacao>
+                <validacaoStatus>Processando / Concluido</validacaoStatus>
+                <validacaoNfeLote>
+                    <validacaoNfe>
+                        <nfe>123</nfe>
+                        <status>pendente</status>
+                    </validacaoNfe>
+                    <validacaoNfe>
+                        <nfe>133</nfe>
+                        <status>processando</status>
+                    </validacaoNfe>
+                    <validacaoNfe>
+                        <nfe>423</nfe>
+                        <status>concluido</status>
+                    </validacaoNfe>
+                </validacaoNfeLote>
+            </xml>
+
+### Consulta de dados da NF-e [GET /v1/nfe/{chaveNFe}{?protocoloValidacaoNfe}]
+
++ Parameters
+    + chaveNFe - Chave da nota fiscal eletrônica (NF-e)
+    + protocoloValidacaoNfe (number, required) - Protocolo da solicitação da validação
+
++ Response 200 (application/xml)
+    NFe pertence ao lote validado
+
+    + Body
+
+            <xml>
+                <nfe>
+                    <chaveAcesso>12-3456-78.909.876/5432-10-12-345-678.909.876-543.210.123-4</chaveAcesso>
+                    <cobranca>
+                        <fatura>
+                            <numero>000000</numero>
+                            <valorOriginal>10.000,10</valorOriginal>
+                            <valorDesconto>0,10</valorDesconto>
+                            <valorLiquido>10.000,00</valorLiquido>
+                            <normalizadoValorOriginal>10000.1</normalizado_valor_original>
+                            <normalizado_valor_desconto>0.1</normalizado_valor_desconto>
+                            <normalizado_valor_liquido>10000</normalizado_valor_liquido>
+                        </fatura>
+                        <duplicatas>
+                            <duplicata>
+                                <numero>123456-78</numero>
+                                <vencimento>01/12/2016</vencimento>
+                                <valor>5.000,00</valor>
+                                <normalizadoValor>5000</normalizadoValor>
+                            </duplicata>
+                        </duplicatas>
+                    </cobranca>
+                    <destinatario>
+                        <nome>EMPRESA FANTASIA LTDA.</nome>
+                        <cnpj>01.234.567/8901-23</cnpj>
+                        <cpf />
+                        <endereco>AVENIDA COMERCIAL, 201</endereco>
+                        <bairro>PRACA CENTRAL</bairro>
+                        <cep>01234-567</cep>
+                        <municipio>0000000 - AGUAS BRANCAS</municipio>
+                        <telefone>(01)98765-4321</telefone>
+                        <uf>AC</uf>
+                        <pais>1058 - BRASIL</pais>
+                        <indicadorIe>01 - Contribuinte ICMS</indicadorIe>
+                        <ie>123456789</ie>
+                        <suframa />
+                        <im />
+                        <email>comercial@fantasia.com.br</email>
+                        <normalizadoCnpj>01234567890123</normalizadoCnpj>
+                        <normalizadoCpf />
+                        <normalizadoCep>01234567</normalizadoCep>
+                        <normalizadoMunicipio>0000000</normalizadoMunicipio>
+                        <normalizadoPais>1058</normalizadoPais>
+                        <normalizadoIndicadorIe>1</normalizadoIndicadorIe>
+                    </destinatario>
+                    <emitente>
+                        <nome>COMERCIO DE OBJETOS LTDA.</nome>
+                        <nomeFantasia>OBJETOCOM</nomeFantasia>
+                        <cnpj>32.109.876/5432-10</cnpj>
+                        <cpf />
+                        <endereco>AVENIDA COMERCIAL, 102</endereco>
+                        <bairro>PRACA CENTRAL</bairro>
+                        <cep>01234-567</cep>
+                        <municipio>0000000 - AGUAS BRANCAS</municipio>
+                        <telefone>(01)97531-2468</telefone>
+                        <uf>AC</uf>
+                        <pais>1058 - BRASIL</pais>
+                        <indicadorIe>01 - Contribuinte ICMS</indicadorIe>
+                        <ie>987654321</ie>
+                        <suframa />
+                        <im />
+                        <email>comercial@objetos.com.br</email>
+                        <normalizadoCnpj>32109876543210</normalizadoCnpj>
+                        <normalizadoCpf />
+                        <normalizadoCep>01234567</normalizadoCep>
+                        <normalizadoMunicipio>0000000</normalizadoMunicipio>
+                        <normalizadoPais>1058</normalizadoPais>
+                        <normalizadoIndicadorIe>1</normalizadoIndicadorIe>
+                        <municipio_icms>0101010</municipio_icms>
+                        <cnae />
+                    </emitente>
+                    <info_adicionais>
+                        <formato_impressao>1 - DANFE normal, retrato</formato_impressao>
+                        <informacoes_complementares>PEDIDO: 123456</informacoes_complementares>
+                        <normalizado_formato_impressao>1</normalizado_formato_impressao>
+                        <compra>
+                            <nota_empenho />
+                            <pedido />
+                            <contrato />
+                        </compra>
+                    </info_adicionais>
+                    <local>
+                        <cnpj />
+                        <cpf />
+                        <endereco />
+                        <bairro />
+                        <municipio />
+                        <uf />
+                        <normalizado_cnpj />
+                        <normalizado_cpf />
+                        <normalizado_municipio />
+                    </local>
+                    <nfe>
+                        <modelo>12</modelo>345
+                        <serie>344</serie>
+                        <numero>909876</numero>
+                        <dataEmissao>01/12/2016 10:00:01-02:00</data_emissao>
+                        <dataSaidaEntrada>02/12/2016 10:00:01-02:00</data_saida_entrada>
+                        <valorTotal>5.000,00</valorTotal>
+                        <normalizadoValorTotal>5103.34</normalizadoValorTotal>
+                        <emitente>
+                            <cnpj>32.109.876/5432-10</cnpj>
+                            <nome>COMERCIO DE OBJETOS LTDA.</nome>
+                            <ie>987654321</ie>
+                            <uf>AC</uf>
+                            <normalizadoCnpj>32109876543210</normalizadoCnpj>
+                        </emitente>
+                        <destinatario>
+                            <cnpj>01.234.567/8901-23</cnpj>
+                            <cpf />
+                            <nome>EMPRESA FANTASIA LTDA.</nome>
+                            <ie>123456789</ie>
+                            <uf>AC</uf>
+                            <destinoOperacao>1 - Operação Interna</destinoOperacao>
+                            <consumidorFinal>0 - Normal</consumidorFinal>
+                            <presencaComprador>9 - Operação não presencial (outros)</presencaComprador>
+                            <normalizadoCnpj>01234567890123</normalizadoCnpj>
+                            <normalizadoCpf />
+                            <normalizadoDestinoOperacao>1</normalizadoDestinoOperacao>
+                            <normalizadoConsumidorFinal>0</normalizadoConsumidorFinal>
+                            <normalizadoPresencaComprador>9</normalizadoPresencaComprador>
+                            <normalizadoPais>1058</normalizadoPais>
+                        </destinatario>
+                        <emissao>
+                            <processo>0 - com aplicativo do Contribuinte</processo>
+                            <versao>PROMOB_2_05</versao>
+                            <tipo>1 - Normal</tipo>
+                            <finalidade>1 - Normal</finalidade>
+                            <naturezaoperacao>VENDAS PROD. ESTABELECIMENTO (A PRAZO)</naturezaoperacao>
+                            <tipoOperacao>1 - Saída</tipoOperacao>
+                            <formaPagamento>1 - A prazo</formaPagamento>
+                            <digest>a840=vytMU-nrm4VE.EN9</digest>
+                            <normalizadoProcesso>0</normalizadoProcesso>
+                            <normalizadoTipo>1</normalizadoTipo>
+                            <normalizadoFinalidade>1</normalizadoFinalidade>
+                            <normalizadoTipoOperacao>1</normalizadoTipoOperacao>
+                            <normalizadoFormaPagamento>1</normalizadoFormaPagamento>
+                        </emissao>
+                        <situacao>AUTORIZADA</situacao>
+                        <situacaoAmbiente>produção</situacaoAmbiente>
+                        <eventos>
+                            <evento>
+                                <evento>Autorização de Uso</evento>
+                                <protocolo>01010101010</protocolo>
+                                <dataAutorizacao>01/12/2016 às 12:00:00-02:00</dataAutorizacao>
+                                <dataInclusao>25/01/2016 às 12:00:00</dataInclusao>
+                            </evento>
+                        </eventos>
+                    </nfe>
+                    <normalizado_chave_acesso>12345678909876543210123456789098765432101234</normalizado_chave_acesso>
+                    <produtos>
+                        <produto>
+                            <num>1</num>
+                            <descricao>PRODUTO CATALOGADO NA LOJA</descricao>
+                            <qtd>1</qtd>
+                            <unidade>UN</unidade>
+                            <valor>10.000,10</valor>
+                            <normalizadoValor>10000.1</normalizadoValor>
+                            <codigo>01234-123</codigo>
+                            <ncm>00012345</ncm>
+                            <cest />
+                            <exTipi />
+                            <cfop />
+                            <outrasDespesas />
+                            <valorDesconto />
+                            <valorFrete />
+                            <valorSeguro />
+                            <composicaoValor>1 - O valor do item (vProd) compõe o valor total da NF-e (vProd)</composicaoValor>
+                            <eanComercial>012321123</eanComercial>
+                            <unidadeComercial>UN</unidadeComercial>
+                            <quantidadeComercial>1,0000</quantidadeComercial>
+                            <eanTributavel>011010101</eanTributavel>
+                            <unidadeTributavel>UN</unidadeTributavel>
+                            <quantidadeTributavel>1,0000</quantidadeTributavel>
+                            <valorUnitarioComercial>10.000,1000000000</valorUnitarioComercial>
+                            <valorUnitarioTributavel>10.000,1000000000</valorUnitarioTributavel>
+                            <numeroPedido />
+                            <itemPedido />
+                            <tributos />
+                            <fci />
+                            <icms>
+                                <origemMercadoria>0 - Nacional</origemMercadoria>
+                                <tributacaoIcms>00 - Tributada integralmente</tributacaoIcms>
+                                <modalidade />
+                                <uf />
+                            </icms>
+                            <pis>
+                                <cst>01 - Operação Tributável (base de cálculo = valor da operação alíquota normal (cumulativo/não cumulativo))</cst>
+                                <base_calculo>0,00</base_calculo>
+                                <aliquota>0,0000</aliquota>
+                                <valor>0,00</valor>
+                            </pis>
+                            <cofins>
+                                <cst>01 - Operação Tributável (base de cálculo = valor da operação alíquota normal (cumulativo/não cumulativo))</cst>
+                                <base_calculo>0,00</base_calculo>
+                                <aliquota>0,0000</aliquota>
+                                <valor>0,00</valor>
+                            </cofins>
+                        </produto>
+                    </produtos>
+                    <totais>
+                        <baseCalculoIcms>0,00</baseCalculoIcms>
+                        <valorIcms>0,00</valorIcms>
+                        <desoneradoIcms>0,00</desoneradoIcms>
+                        <baseCalculoIcmsSt>0,00</baseCalculoIcmsSt>
+                        <valorIcmsSt>0,00</valorIcmsSt>
+                        <valorProdutos>10.000,10</valorProdutos>
+                        <valorFrete>0,00</valorFrete>
+                        <valorSeguro>0,00</valorSeguro>
+                        <outrasDespesas>0,00</outrasDespesas>
+                        <valorIpi>0,00</valorIpi>
+                        <valorNfe>0,00</valorNfe>
+                        <valorDescontos>0,00</valorDescontos>
+                        <valorIi>0,00</valorIi>
+                        <valorPis>0,00</valorPis>
+                        <valorCofins>0,00</valorCofins>
+                        <valorTributos />
+                        <valorIcmsFcp />
+                        <valorIcmsInterestadualDest />
+                        <valorIcmsInterestadualRem />
+                        <normalizadoBaseCalculoIcms>0</normalizadoBaseCalculoIcms>
+                        <normalizadoValorIcms>0</normalizadoValorIcms>
+                        <normalizadoDesoneradoIcms>0</normalizadoDesoneradoIcms>
+                        <normalizadoBaseCalculoIcmsSt>0</normalizadoBaseCalculoIcmsSt>
+                        <normalizadoValorIcmsSt>0</normalizadoValorIcmsSt>
+                        <normalizadoValorProdutos>10000.1</normalizadoValorProdutos>
+                        <normalizadoValorFrete>0</normalizadoValorFrete>
+                        <normalizadoValorSeguro>0</normalizadoValorSeguro>
+                        <normalizadoOutrasDespesas>0</normalizadoOutrasDespesas>
+                        <normalizadoValorIpi>0</normalizadoValorIpi>
+                        <normalizadoValorNfe>0</normalizadVoaloNfe>
+                        <normalizadoValorDescontos>0</normalizadoValorDescontos>
+                        <normalizadoValorIi>0</normalizadoValorIi>
+                        <normalizadoValorPis>0</normalizadoValorPis>
+                        <normalizadoValorCofins>0</normalizadoValorCofins>
+                        <normalizadoValorTributos>0</normalizadoValorTributos>
+                        <normalizadoValorIcmsFcp>0</normalizadoValorIcmsFcp>
+                        <normalizadoValorIcmsInterestadualDest>0</normalizadoValorIcmsInterestadualDest>
+                        <normalizadoValorIcmsInterestadualRem>0</normalizadoValorIcmsInterestadualRem>
+                    </totais>
+                    <transporte>
+                        <modalidadeFrete>1 - Por Conta do Destintário</modalidadeFrete>
+                        <normalizadoModalidadeFrete>1</normalizadoModalidadeFrete>
+                        <transportador>
+                            <cnpj>12.345.677/6543-21</cnpj>
+                            <nome>TRANSPORTE DE RECURSOS EMPRESARIAIS</nome>
+                            <ie>0192837465</ie>
+                            <endereco />
+                            <municipio>ALDEIA ROXA</municipio>
+                            <uf>AC</uf>
+                            <normalizado_cnpj>12345677654321</normalizado_cnpj>
+                        </transportador>
+                        <veiculo>
+                            <placa>TRE0123</placa>
+                            <uf>AC</uf>
+                            <rntc />
+                        </veiculo>
+                    </transporte>
+                </nfe>
+            </xml>
+
++ Response 422 (application/xml)
+    NFe não pertence ao lote validado
+
+    + Body
+
+            <xml>
+                <codigoDeErro>1</codigoDeErro>
+                <mensagem>Protocolo inválido</mensagem>
+            </xml>
+
++ Response 406 (application/xml)
+    Protocolo não informado
+
+    + Body
+
+            <xml>
+                <codigoDeErro>3</codigoDeErro>
+                <mensagem>Protocolo não informado</mensagem>
+            </xml>
 
 
+## Consulta dos dados de um Participante [GET /v1/participante/{cnpj}{?protocoloValidacaoNfe}]
+
++ Parameters
+    + cnpj (string) - CNPJ do participante a ser consultado
+    + protocoloValidacaoNfe (number, required) - Protocolo da solicitação da validação
+
++ Response 200 (application/xml)
+    Caso o cnpj do participante pertença a alguma nfe do lote validado
+
+    + Body
+
+            <xml>
+                <participante>
+                    <aberturaData>01/01/2001</aberturaData>
+                    <atividadeEconomica>00.01-1-00 - Venda de equipamentos</atividadeEconomica>
+                    <atividadeEconomicaSecundaria>01.01-1-00 - Fabricação de equipamentos</atividadeEconomicaSecundaria>
+                    <atividadeEconomicaSecundariaLista>01.01-1-00 - Fabricação de equipamentos</atividadeEconomicaSecundariaLista>
+                    <capitalSocial>R$ 1.000.000,00 (Um milhão de reais)</capitalSocial>
+                    <cnpj>12.098.345/7654-67</cnpj>
+                    <consultaDatahora>01/12/2016 16:00:00</consultaDatahora>
+                    <efr>*****</efr>
+                    <email></email>
+                    <enderecoBairro>AREA COMERCIAL</enderecoBairro>
+                    <enderecoCep>12.345-098</enderecoCep>
+                    <enderecoComplemento>CONJUNTO 1010</enderecoComplemento>
+                    <enderecoLogradouro>CENTRAL DE RECURSOS</enderecoLogradouro>
+                    <enderecoMunicipio>VALE MINERAL</enderecoMunicipio>
+                    <enderecoNumero>39</enderecoNumero>
+                    <endereco_uf>AC</endereco_uf>
+                    <matrizFilial>MATRIZ</matrizFilial>
+                    <naturezaJuridica>206-2 - SOCIEDADE EMPRESARIA LIMITADA</naturezaJuridica>
+                    <nomeFantasia>FABRICA BRASILEIRA</nomeFantasia>
+                    <normalizadoAberturaData>01/01/2001</normalizadoAberturaData>
+                    <normalizadoCapitalSocial>1000000</normalizadoCapitalSocial>
+                    <normalizadoCnpj>12098345765467</normalizadoCnpj>
+                    <normalizadoConsultaDatahora>01/12/2016 16:00:00</normalizadoConsultaDatahora>
+                    <normalizadoEnderecoCep>12345098</normalizadoEnderecoCep>
+                    <normalizadoSituacaoCadastralData>01/01/2005</normalizadoSituacaoCadastralData>
+                    <normalizadoSituacaoEspecialData></normalizadoSituacaoEspecialData>
+                    <qsa>
+                        <socio>
+                            <nome>JOAO BORGES</nome>
+                            <qualificacao>49-Sócio-Administrador</qualificacao>
+                        </socio>
+                    </qsa>
+                    <razaoSocial>INDUSTRIA E COMERCIO DE RECURSOS COMERCIAIS LTDA.</razaoSocial>
+                    <situacaoCadastral>ATIVA</situacaoCadastral>
+                    <situacaoCadastralData>01/01/2005</situacaoCadastralData>
+                    <situacaoCadastralObservacoes></situacaoCadastralObservacoes>
+                    <situacaoEspecial>********</situacaoEspecial>
+                    <situacaoEspecialData>********</situacaoEspecialData>
+                    <telefone>(01) 9283-74651</telefone>
+                </participante>
+            </xml>
+
++ Response 422 (application/xml)
+    Caso o cnpj do participante não pertença a nenhuma nfe do lote validado
+
+    + Body
+
+            <xml>
+                <codigoDeErro>1</codigoDeErro>
+                <mensagem>Protocolo inválido</mensagem>
+            </xml>
+
++ Response 406 (application/xml)
+    Protocolo não informado
+
+    + Body
+
+            <xml>
+                <codigoDeErro>3</codigoDeErro>
+                <mensagem>Protocolo não informado</mensagem>
+            </xml>
+
+## Consulta das conclusões sobre uma validação de NF-e [GET /conclusoes/{nfe}{?protocoloValidacaoNfe}]
+
++ Parameters
+    + nfe (string) - Chave da nota a ser consultada
+    + protocoloValidacaoNfe (number, required) - Protocolo da solicitação da validação
+
++ Response 200 (application/xml)
+    NFe pertence ao lote validado
+
+    + Body
+
+            <xml>
+                <conclusoes>
+                    <conclusao>
+                        <mensagem>Lorem Ipsum</mensagem>
+                        <escopo>dfe</escopo>
+                        <dimensao>fiscal</dimensao>
+                        <algoritmo>Algoritmo CERC 1</algoritmo>
+                        <impacto>positivo</impacto>
+                        <mostrarNoExtrato>false</mostrarNoExtrato>
+                        <nfeId>12345</nfeId>
+                        <concluidoEm>12/08/2016 10:00:01</concluidoEm>
+                    </conclusao>
+                </conclusoes>
+            </xml>
+
++ Response 422 (application/xml)
+    NFe não pertence ao lote validado
+
+    + Body
+
+            <xml>
+                <codigoDeErro>1</codigoDeErro>
+                <mensagem>Protocolo inválido</mensagem>
+            </xml>
+
++ Response 406 (application/xml)
+    Protocolo não informado
+
+    + Body
+
+            <xml>
+                <codigoDeErro>3</codigoDeErro>
+                <mensagem>Protocolo não informado</mensagem>
+            </xml>
+
+## Atualização de um registro provisório de duplicata de NF-e [/registro-provisorio-em-lote/promover]
+
+
+### Solicitação de promoção de registros provisorios em lote [POST]
+
++ Request (application/xml)
+
+    + Body
+
+            <xml>
+                <registrosProvisorios>
+                    <registroProvisorio>
+                        <id>123213</id>
+                        <nfe>91238091283</nfe>
+                    </registroProvisorio>
+                    <registroProvisorio>
+                        <id>999</id>
+                        <nfe>123123</nfe>
+                    </registroProvisorio>
+                </registrosProvisorios>
+            </xml>
++ Response 200 (application/xml)
+    Caso de sucesso
+
+    + Body
+
+            <xml>
+                <protocolo>2193901283</protocolo>
+                <mensagem>Solicitação de promoção de registros será processada.</mensagem>
+            </xml>
+
++ Response 400 (application/json)
+    Formato inválido
+
+    + Body
+
+            <xml>
+                <codigoDeErro>1</codigoDeErro>
+                <mensagem>Formato inválido</mensagem>
+            </xml>
+
+### Consulta da solicitação de promoção de registros provisorios em lote [GET /registro-provisorio-em-lote/{protocolo}]
++ Parameters
+    + protocolo (number) - Protocolo da solicitação da validação
 
 + Response 200 (application/json)
 
+    `inválido` aplica-se aos registros não cadastrados na base de dados;
+
+    `recusado` aplica-se aos registros provisórios que não puderam ser associados à nfe especificada e, portanto, continuam sendo provisórios (sem lastro);
+
+    `promovido` corresponde aos registros que se tornaram definitivos e, portanto, puderam ser associados à nfe informada.
 
     + Body
 
-            {
-                name: "John",
-                age: 32
-            }
+            <xml>
+                <promocaoRegistrosProvisorios>
+                <registroProvisorio>
+                    <id>123</id>
+                    <status>pendente / invalido / processando / promovido / recusado</status>
+                </registroProvisorio>
+                </promocaoRegistrosProvisorios>
+            </xml>
