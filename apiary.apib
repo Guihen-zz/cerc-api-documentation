@@ -5,7 +5,7 @@ HOST: http://cerc-api-staging.herokuapp.com/
 
 This is a sample text that must be replaced to an introduction to the api.
 
-## Registro de Recebíveis [/v1/nfe/recebiveis/registers]
+## Registro Definitivo de Operações com Duplicata Mercantil [/v1/registro-definitivo-de-operacao-duplicata-mercantil]
 
 Este endpoint só trabalhará com duplicatas de NFe.
 
@@ -40,7 +40,7 @@ Lista todos os recebíveis registrados.
             }
         ]
 
-### Solicitar registro definitivo de recebíveis [POST]
+### Registro definitivo de operações com duplicata mercantil [POST]
 
 Recebe um conjunto de duplicatas (chave da NFe, id da duplicata, valor da duplicata, data de vencimento)
 e as registra em nome de um agente.
@@ -141,12 +141,10 @@ e as registra em nome de um agente.
             }
 
 
-## Status da Solicitação de registro definitivo [/v1/nfe/recebiveis/{protocol}/status]
+### Status de registro definitivo de operações com duplicata mercantil [GET /v1/registro-definitivo-de-operacao-com-duplicata-mercantil/status]
 
 Endpoint para realizar pulling das informações relacionadas a um lote de
 recebíveis em processo de registro.
-
-### Ver status [GET]
 
 Retorna o status do processo de registro de cada recebivel no lote enviado.
 
@@ -180,10 +178,35 @@ Retorna o status do processo de registro de cada recebivel no lote enviado.
                 ]
             }
 
+### Consulta de registro definitivo de operações com duplicata mercantil [GET /v1/registro-definitivo-de-operacao-duplicata-mercantil]
+Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
-## Registro precário [/v1/nfe/recebiveis/precario-register]
++ Response 200 (application/json)
 
-### Solicitação de registro precário em lote [POST]
+        [
+            {
+                "id": "mongo_id",
+                "agent_id": "mongo_id",
+                "[sacado]_cnpj": "CNPJ",
+                "[cedente]_cnpj": "CNPJ",
+                "[matricula|recebível]_id": "[id único]",
+                "value_in_cents": 123123,
+                "expiration_date": "12/12/2016",
+                "document_number": "1000-A"
+          }
+        ]
+
++ Response 404 (application/json)
+
+        {
+            "message": "Formato inválido.",
+            "error_code": 1
+        }
+
+## Registro Provisório [/v1/registro-provisorio-de-operacao-duplicata-mercantil]
+
+### Registro provisório de operações com duplicata mercantil [POST]
 Lorem ipsum dolor sit amet, consectetur adipisicing elit,
 sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 + Request (application/json)
@@ -214,7 +237,7 @@ sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
             "error_code": 1
         }
 
-### Status da solicitação de registro precário em lote [GET /v1/nfe/[recebiveis]/registers/{protocolo}/status]
+### Status de registro provisório de operações com duplicata mercantil  [GET /v1/registro-provisorio-de-operacao-duplicata-mercantil/status]
 Lorem ipsum dolor sit amet, consectetur adipisicing elit,
 sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
@@ -248,7 +271,7 @@ sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
             "error_code": 1
         }
 
-### Consulta de registros precários em lote [GET /v1/nfe/[recebiveis]/[precario]-registers]
+### Consulta de registros provisórios de operações com duplicata mercantil [GET /v1/registro-provisorio-de-operacao-duplicata-mercantil]
 Lorem ipsum dolor sit amet, consectetur adipisicing elit,
 sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
