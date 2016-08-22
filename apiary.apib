@@ -529,61 +529,8 @@ Pendente de especificação
 
 ### Solicitação de promoção de registros provisorios em lote [POST]
 
-+ Request (application/xml)
-
-    + Body
-
-            <xml>
-                <registrosProvisorios>
-                    <registroProvisorio>
-                        <id>123213</id>
-                        <nfe>91238091283</nfe>
-                    </registroProvisorio>
-                    <registroProvisorio>
-                        <id>999</id>
-                        <nfe>123123</nfe>
-                    </registroProvisorio>
-                </registrosProvisorios>
-            </xml>
-+ Response 200 (application/xml)
-    Caso de sucesso
-
-    + Body
-
-            <xml>
-                <protocolo>2193901283</protocolo>
-                <mensagem>Solicitação de promoção de registros será processada.</mensagem>
-            </xml>
-
-+ Response 400 (application/json)
-    Formato inválido
-
-    + Body
-
-            <xml>
-                <codigoDeErro>1</codigoDeErro>
-                <mensagem>Formato inválido</mensagem>
-            </xml>
+Pendente de especificação
 
 ### Consulta da solicitação de promoção de registros provisorios em lote [GET /registro-provisorio-em-lote/{protocolo}]
-+ Parameters
-    + protocolo (number) - Protocolo da solicitação da validação
 
-+ Response 200 (application/json)
-
-    `inválido` aplica-se aos registros não cadastrados na base de dados;
-
-    `recusado` aplica-se aos registros provisórios que não puderam ser associados à nfe especificada e, portanto, continuam sendo provisórios (sem lastro);
-
-    `promovido` corresponde aos registros que se tornaram definitivos e, portanto, puderam ser associados à nfe informada.
-
-    + Body
-
-            <xml>
-                <promocaoRegistrosProvisorios>
-                <registroProvisorio>
-                    <id>123</id>
-                    <status>pendente / invalido / processando / promovido / recusado</status>
-                </registroProvisorio>
-                </promocaoRegistrosProvisorios>
-            </xml>
+Pendente de especificação
