@@ -5,298 +5,6 @@ HOST: http://cerc-api-staging.herokuapp.com/
 
 This is a sample text that must be replaced to an introduction to the api.
 
-## Registro Definitivo de Operações com Duplicata Mercantil [/v1/registro-definitivo-de-operacao-duplicata-mercantil]
-
-Este endpoint só trabalhará com duplicatas de NFe.
-
-### Listar recebíveis registrados [GET]
-
-Lista todos os recebíveis registrados.
-
-+ Response 200 (application/json)
-
-        [
-            {
-                id: "57b2285b5192b47bb6c5272b",
-                agent_id: "57b2285b5192b47bb6c5272c",
-                drawee_id: "57b2285b5192b47bb6c5272d",
-                transferor_id: "57b2285b5192b47bb6c5272e",
-                value_in_cents: 123131,
-                recebivel_id: "57b2285b5192b47bb6c5272f",
-                due_date: "12/03/2016",
-                nfe_key: "231321421421421412412421",
-                document_number: "1000-A",
-            },
-            {
-                id: "58b2285b5192b47bb6c5272b",
-                agent_id: "58b2285b5192b47bb6c5272c",
-                drawee_id: "58b2285b5192b47bb6c5272d",
-                transferor_id: "58b2285b5192b47bb6c5272e",
-                value_in_cents: 123131,
-                recebivel_id: "58b2285b5192b47bb6c5272f",
-                due_date: "12/04/2016",
-                nfe_key: "231321421421421412412421",
-                document_number: "1000-B",
-            }
-        ]
-
-### Registro definitivo de operações com duplicata mercantil [POST]
-
-Recebe um conjunto de duplicatas (chave da NFe, id da duplicata, valor da duplicata, data de vencimento)
-e as registra em nome de um agente.
-
-+ Request (application/json)
-
-        {
-            "agent_id": "58b2285b5192b47bb6c5272c",
-            "recebiveis": [
-                {
-                    "nfe_key": "231321421421421412412421",
-                    "duplicates": [
-                        {
-                            "document_number": "1000-A",
-                            "value_in_cents": 21313213,
-                            "due_date": "12/11/2016"
-                        },
-                        {
-                            "document_number": "1000-B",
-                            "value_in_cents": 21313213,
-                            "due_date": "12/12/2016"
-                        }
-                    ]
-                }
-            ]
-        }
-
-+ Response 202 (application/json)
-
-    + Body
-
-            {
-                protocol: 1231321313131,
-                message: "O lote foi aceito e será processado",
-            }
-
-+ Request (application/json)
-
-        {
-            "agent_id": "58b2285b5192b47bb6c5272c",
-            "recebiveis": [
-                {
-                    "nfe_key": "231321421421421412412421",
-                    "duplicates": [
-                        {
-                            "document_number": "1000-A",
-                            "value_in_cents": 21313213,
-                            "due_date": "12/11/2016"
-                        },
-                        {
-                            "document_number": "1000-B",
-                            "value_in_cents": 21313213,
-                            "due_date": "12/12/2016"
-                        }
-                }
-            ]
-        }
-
-+ Response 422 (application/json)
-
-    + Body
-
-            {
-                error_message: "Formato inválido.",
-                error_code: 1
-            }
-
-+ Request (application/json)
-
-        {
-            "agent_id": "1",
-            "recebiveis": [
-                {
-                    "nfe_key": "231321421421421412412421",
-                    "duplicates": [
-                        {
-                            "document_number": "1000-A",
-                            "value_in_cents": 21313213,
-                            "due_date": "12/11/2016"
-                        },
-                        {
-                            "document_number": "1000-B",
-                            "value_in_cents": 21313213,
-                            "due_date": "12/12/2016"
-                        }
-                    ]
-                }
-            ]
-        }
-
-+ Response 422 (application/json)
-
-    + Body
-
-            {
-                error_message: "O agente fornecido não existe.",
-                error_code: 2
-            }
-
-
-### Status de registro definitivo de operações com duplicata mercantil [GET /v1/registro-definitivo-de-operacao-com-duplicata-mercantil/status]
-
-Endpoint para realizar pulling das informações relacionadas a um lote de
-recebíveis em processo de registro.
-
-Retorna o status do processo de registro de cada recebivel no lote enviado.
-
-+ Parameters
-    + protocol (number) - o número do protocolo fornecido na solicitação de registro
-
-+ Response 200 (application/json)
-
-
-    + Body
-
-            {
-                protocol: 1312321,
-                lote_status_code: 003,
-                status_message: "Em processamento",
-                processamento_de_recebiveis: [
-                    {
-                        nfe_key: "123123123213",
-                        document_number: "1000-A",
-                        status_code: 123,
-                        register_id: "57b2285b5192b47bb6c5272d"
-
-                    },
-                    {
-                        nfe_key: "123123123213",
-                        document_number: "1000-B",
-                        status_code: 124,
-                        register_id: "57b2285b5192b47bb6c5272e"
-
-                    }
-                ]
-            }
-
-### Consulta de registro definitivo de operações com duplicata mercantil [GET /v1/registro-definitivo-de-operacao-duplicata-mercantil]
-Lorem ipsum dolor sit amet, consectetur adipisicing elit,
-sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-+ Response 200 (application/json)
-
-        [
-            {
-                "id": "mongo_id",
-                "agent_id": "mongo_id",
-                "[sacado]_cnpj": "CNPJ",
-                "[cedente]_cnpj": "CNPJ",
-                "[matricula|recebível]_id": "[id único]",
-                "value_in_cents": 123123,
-                "expiration_date": "12/12/2016",
-                "document_number": "1000-A"
-          }
-        ]
-
-+ Response 404 (application/json)
-
-        {
-            "message": "Formato inválido.",
-            "error_code": 1
-        }
-
-## Registro Provisório [/v1/registro-provisorio-de-operacao-duplicata-mercantil]
-
-### Registro provisório de operações com duplicata mercantil [POST]
-Lorem ipsum dolor sit amet, consectetur adipisicing elit,
-sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-+ Request (application/json)
-
-        {
-            "agent_id": 3,
-            "[recebiveis]": [
-                {
-                    "[cedente]_cnpj": "CNPJ",
-                    "[sacado]_cnpj": "CNPJ",
-                    "document_number": 999,
-                    "value_in_cents": 23,
-                    "expiration_date":  "12/12/2016"
-                }
-            ]
-        }
-
-+ Response 202 (application/json)
-
-        {
-            "protocol": 12312312,
-            "message": "O lote foi aceito e será processado."
-        }
-+ Response 422 (application/json)
-
-        {
-            "message": "Formato inválido.",
-            "error_code": 1
-        }
-
-### Status de registro provisório de operações com duplicata mercantil  [GET /v1/registro-provisorio-de-operacao-duplicata-mercantil/status]
-Lorem ipsum dolor sit amet, consectetur adipisicing elit,
-sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-+ Parameters
-    + protocolo (number) - Protocolo da solicitação de registro
-
-+ Response 200 (application/json)
-
-        {
-            "protocol": 12312312,
-            "status_code": 0,
-            "status_message": "...",
-            "[processamentos_de_registros_precarios]": [
-                {
-                    "[cedente]_cnpj": "CNPJ",
-                    "[sacado]_cnpj": "CNPJ",
-                    "document_number": 999,
-                    "value_in_cents": 23,
-                    "expiration_date": "12/12/2016",
-                    "status_code": 123,
-                    "status_message": "...",
-                    "[precario]_register_id": "mongo_id | null"
-                }
-            ]
-        }
-
-+ Response 404 (application/json)
-
-        {
-            "message": "Formato inválido.",
-            "error_code": 1
-        }
-
-### Consulta de registros provisórios de operações com duplicata mercantil [GET /v1/registro-provisorio-de-operacao-duplicata-mercantil]
-Lorem ipsum dolor sit amet, consectetur adipisicing elit,
-sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-+ Response 200 (application/json)
-
-        [
-            {
-                "id": "mongo_id",
-                "agent_id": "mongo_id",
-                "[sacado]_cnpj": "CNPJ",
-                "[cedente]_cnpj": "CNPJ",
-                "[matricula|recebível]_id": "[id único]",
-                "value_in_cents": 123123,
-                "expiration_date": "12/12/2016",
-                "document_number": "1000-A"
-          }
-        ]
-
-+ Response 404 (application/json)
-
-        {
-            "message": "Formato inválido.",
-            "error_code": 1
-        }
-
 ## Validação de NF-e [/v1/validacao-nfe-em-lote]
 
 ### Validação de NF-e em lote [POST]
@@ -783,6 +491,38 @@ sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                 <codigoDeErro>3</codigoDeErro>
                 <mensagem>Protocolo não informado</mensagem>
             </xml>
+
+## Registro Definitivo de Operações com Duplicata Mercantil [/v1/registro-definitivo-de-operacao-duplicata-mercantil]
+
+Description.
+
+### Registro definitivo de operações com duplicata mercantil [POST]
+
+Pendente de especificação.
+
+### Status de registro definitivo de operações com duplicata mercantil [GET /v1/registro-definitivo-de-operacao-com-duplicata-mercantil/status]
+
+Pendente de especificação.
+
+### Consulta de registro definitivo de operações com duplicata mercantil [GET /v1/registro-definitivo-de-operacao-duplicata-mercantil]
+
+Pendente de especificação.
+
+## Registro Provisório de Operações com Duplicata Mercantil [/v1/registro-provisorio-de-operacao-duplicata-mercantil]
+
+Description
+
+### Registro provisório de operações com duplicata mercantil [POST]
+
+Pendente de especificação
+
+### Status de registro provisório de operações com duplicata mercantil  [GET /v1/registro-provisorio-de-operacao-duplicata-mercantil/status]
+
+Pendente de especificação
+
+### Consulta de registros provisórios de operações com duplicata mercantil [GET /v1/registro-provisorio-de-operacao-duplicata-mercantil]
+
+Pendente de especificação
 
 ## Atualização de um registro provisório de duplicata de NF-e [/registro-provisorio-em-lote/promover]
 
