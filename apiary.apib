@@ -15,11 +15,11 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 + Request (application/xml)
 
         <xml>
-            <agentId>123123</agentId>
-            <nfeLote>
+            <agent-id>123123</agent-id>
+            <nfe-lote>
                 <nfe>123</nfe>
                 <nfe>4234</nfe>
-            </nfeLote>
+            </nfe-lote>
         </xml>
 
 + Response 200 (application/xml)
@@ -48,7 +48,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
     + Body
 
             <xml>
-                <codigoDeErro>2</codigoDeErro>
+                <codigo-de-erro>2</codigo-de-erro>
                 <mensagem>Agente não cadastrado.</mensagem>
             </xml>
 
@@ -63,22 +63,22 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
     + Body
 
             <xml>
-                <dataDeSolicitacao>12/02/2016</dataDeSolicitacao>
-                <validacaoStatus>Processando / Concluido</validacaoStatus>
-                <validacaoNfeLote>
-                    <validacaoNfe>
+                <data-de-solicitacao>12/02/2016</data-de-solicitacao>
+                <validacao-status>Processando / Concluido</validacao-status>
+                <validacao-nfe-lote>
+                    <validacao-nfe>
                         <nfe>123</nfe>
                         <status>pendente</status>
-                    </validacaoNfe>
-                    <validacaoNfe>
+                    </validacao-nfe>
+                    <validacao-nfe>
                         <nfe>133</nfe>
                         <status>processando</status>
-                    </validacaoNfe>
-                    <validacaoNfe>
+                    </validacao-nfe>
+                    <validacao-nfe>
                         <nfe>423</nfe>
                         <status>concluido</status>
-                    </validacaoNfe>
-                </validacaoNfeLote>
+                    </validacao-nfe>
+                </validacao-nfe-lote>
             </xml>
 
 ### Consulta de dados da NF-e [GET /v1/nfe/{chaveNFe}{?protocoloValidacaoNfe}]
@@ -359,7 +359,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
     + Body
 
             <xml>
-                <codigoDeErro>1</codigoDeErro>
+                <codigo-de-erro>1</codigo-de-erro>
                 <mensagem>Protocolo inválido</mensagem>
             </xml>
 
@@ -369,7 +369,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
     + Body
 
             <xml>
-                <codigoDeErro>3</codigoDeErro>
+                <codigo-de-erro>3</codigo-de-erro>
                 <mensagem>Protocolo não informado</mensagem>
             </xml>
 
@@ -387,44 +387,44 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
             <xml>
                 <participante>
-                    <aberturaData>01/01/2001</aberturaData>
-                    <atividadeEconomica>00.01-1-00 - Venda de equipamentos</atividadeEconomica>
-                    <atividadeEconomicaSecundaria>01.01-1-00 - Fabricação de equipamentos</atividadeEconomicaSecundaria>
-                    <atividadeEconomicaSecundariaLista>01.01-1-00 - Fabricação de equipamentos</atividadeEconomicaSecundariaLista>
-                    <capitalSocial>R$ 1.000.000,00 (Um milhão de reais)</capitalSocial>
+                    <abertura-data>01/01/2001</abertura-data>
+                    <atividade-economica>00.01-1-00 - Venda de equipamentos</atividade-economica>
+                    <atividade-economica-secundaria>01.01-1-00 - Fabricação de equipamentos</atividade-economica-secundaria>
+                    <atividade-economica-secundaria-lista>01.01-1-00 - Fabricação de equipamentos</atividade-economica-secundaria-lista>
+                    <capital-social>R$ 1.000.000,00 (Um milhão de reais)</capital-social>
                     <cnpj>12.098.345/7654-67</cnpj>
-                    <consultaDatahora>01/12/2016 16:00:00</consultaDatahora>
+                    <consulta-datahora>01/12/2016 16:00:00</consulta-datahora>
                     <efr>*****</efr>
                     <email></email>
-                    <enderecoBairro>AREA COMERCIAL</enderecoBairro>
-                    <enderecoCep>12.345-098</enderecoCep>
-                    <enderecoComplemento>CONJUNTO 1010</enderecoComplemento>
-                    <enderecoLogradouro>CENTRAL DE RECURSOS</enderecoLogradouro>
-                    <enderecoMunicipio>VALE MINERAL</enderecoMunicipio>
-                    <enderecoNumero>39</enderecoNumero>
-                    <endereco_uf>AC</endereco_uf>
-                    <matrizFilial>MATRIZ</matrizFilial>
-                    <naturezaJuridica>206-2 - SOCIEDADE EMPRESARIA LIMITADA</naturezaJuridica>
-                    <nomeFantasia>FABRICA BRASILEIRA</nomeFantasia>
-                    <normalizadoAberturaData>01/01/2001</normalizadoAberturaData>
-                    <normalizadoCapitalSocial>1000000</normalizadoCapitalSocial>
-                    <normalizadoCnpj>12098345765467</normalizadoCnpj>
-                    <normalizadoConsultaDatahora>01/12/2016 16:00:00</normalizadoConsultaDatahora>
-                    <normalizadoEnderecoCep>12345098</normalizadoEnderecoCep>
-                    <normalizadoSituacaoCadastralData>01/01/2005</normalizadoSituacaoCadastralData>
-                    <normalizadoSituacaoEspecialData></normalizadoSituacaoEspecialData>
+                    <endereco-bairro>AREA COMERCIAL</endereco-bairro>
+                    <endereco-cep>12.345-098</endereco-cep>
+                    <endereco-complemento>CONJUNTO 1010</endereco-complemento>
+                    <endereco-logradouro>CENTRAL DE RECURSOS</endereco-logradouro>
+                    <endereco-municipio>VALE MINERAL</endereco-municipio>
+                    <endereco-numero>39</endereco-numero>
+                    <endereco-uf>AC</endereco-uf>
+                    <matriz-filial>MATRIZ</matriz-filial>
+                    <natureza-juridica>206-2 - SOCIEDADE EMPRESARIA LIMITADA</natureza-juridica>
+                    <nome-fantasia>FABRICA BRASILEIRA</nome-fantasia>
+                    <normalizado-abertura-data>01/01/2001</normalizado-abertura-data>
+                    <normalizado-capital-social>1000000</normalizado-capital-social>
+                    <normalizado-cnpj>12098345765467</normalizado-cnpj>
+                    <normalizado-consulta-datahora>01/12/2016 16:00:00</normalizado-consulta-datahora>
+                    <normalizado-endereco-cep>12345098</normalizado-endereco-cep>
+                    <normalizado-situacao-cadastral-data>01/01/2005</normalizado-situacao-cadastral-data>
+                    <normalizado-situacao-especial-data></normalizado-situacao-especial-data>
                     <qsa>
                         <socio>
                             <nome>JOAO BORGES</nome>
                             <qualificacao>49-Sócio-Administrador</qualificacao>
                         </socio>
                     </qsa>
-                    <razaoSocial>INDUSTRIA E COMERCIO DE RECURSOS COMERCIAIS LTDA.</razaoSocial>
-                    <situacaoCadastral>ATIVA</situacaoCadastral>
-                    <situacaoCadastralData>01/01/2005</situacaoCadastralData>
-                    <situacaoCadastralObservacoes></situacaoCadastralObservacoes>
-                    <situacaoEspecial>********</situacaoEspecial>
-                    <situacaoEspecialData>********</situacaoEspecialData>
+                    <razao-social>INDUSTRIA E COMERCIO DE RECURSOS COMERCIAIS LTDA.</razao-social>
+                    <situacao-cadastral>ATIVA</situacaoC-cdastral>
+                    <situacao-cadastral-data>01/01/2005</situacao-cadastral-data>
+                    <situacao-cadastral-observacoes></situacao-cadastral-observacoes>
+                    <situacao-especial>********</situacao-especial>
+                    <situacao-especial-data>********</situacao-especial-data>
                     <telefone>(01) 9283-74651</telefone>
                 </participante>
             </xml>
@@ -435,7 +435,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
     + Body
 
             <xml>
-                <codigoDeErro>1</codigoDeErro>
+                <codigo-de-erro>1</codigo-de-erro>
                 <mensagem>Protocolo inválido</mensagem>
             </xml>
 
@@ -445,7 +445,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
     + Body
 
             <xml>
-                <codigoDeErro>3</codigoDeErro>
+                <codigo-de-erro>3</codigo-de-erro>
                 <mensagem>Protocolo não informado</mensagem>
             </xml>
 
@@ -468,9 +468,9 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
                         <dimensao>fiscal</dimensao>
                         <algoritmo>Algoritmo CERC 1</algoritmo>
                         <impacto>positivo</impacto>
-                        <mostrarNoExtrato>false</mostrarNoExtrato>
-                        <nfeId>12345</nfeId>
-                        <concluidoEm>12/08/2016 10:00:01</concluidoEm>
+                        <mostrar-no-extrato>false</mostrar-no-extrato>
+                        <nfe-id>12345</nfe-id>
+                        <concluido-em>12/08/2016 10:00:01</concluido-em>
                     </conclusao>
                 </conclusoes>
             </xml>
@@ -481,7 +481,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
     + Body
 
             <xml>
-                <codigoDeErro>1</codigoDeErro>
+                <codigo-de-erro>1</codigo-de-erro>
                 <mensagem>Protocolo inválido</mensagem>
             </xml>
 
@@ -491,7 +491,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
     + Body
 
             <xml>
-                <codigoDeErro>3</codigoDeErro>
+                <codigo-de-erro>3</codigo-de-erro>
                 <mensagem>Protocolo não informado</mensagem>
             </xml>
 
