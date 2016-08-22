@@ -3,497 +3,552 @@ HOST: http://cerc-api-staging.herokuapp.com/
 
 # CERC API
 
-A CERC API é uma plataforma para auxiliar os agentes financiadores e de registro a obter mais informações sobre as operações financeiras que têm recebíveis como lastro.
+This is a sample text that must be replaced to an introduction to the api.
 
-
-## Validação de NF-e [/v1/validacao-nfe-em-lote]
-
-O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados existentes sobre cada nota fiscal presente no lote. Os dados considerados são os disponibilizados pelo serviço de consulta de notas fiscais da Secretaria da Fazenda e pelo serviço de consulta de CNPJ da Receita Federal. Sobre os dados encontrados na pesquisa, são aplicados algoritmos para verificar a elegibilidade do documento fiscal para uso como lastro de operação financeira de transferência de direitos creditórios. Os dados encontrados na consulta da nota fiscal e nas consultas dos participantes da operação mercantil, junto a Receita Federal, são armazenados por um determinado período de tempo e poderão ser consultados através de outro serviço que será descrito abaixo.
+## Validação de NF-e [/v1/nfe-validations]
 
 ### Validação de NF-e em lote [POST]
 
++ Attributes
+
+    + `agent-id` (string) - Identificador do agente.
+    + `nfe-keys` (array) - Lista de chaves de nota fiscais.
+        + `nfe-key` (string) - Chave de nota fiscal.
+
 + Request (application/xml)
 
-        <xml>
-            <agent-id>123123</agent-id>
-            <nfe-lote>
-                <nfe>123</nfe>
-                <nfe>4234</nfe>
-            </nfe-lote>
-        </xml>
+        <?xml version="1.0" encoding="UTF-8"?>
+        <request>
+          <agent-id>5791101d4f707323fc55ef89</agent-id>
+          <nfe-keys type="array">
+            <nfe-key>2616 0171 7587 1745 7358 8901 0461 0113 2569 8211 1855</nfe-key>
+            <nfe-key>1116 0162 3738 5963 8289 1490 9020 8969 3578 3754 2665</nfe-key>
+            <nfe-key>2316 0107 1775 6653 0603 3711 4166 4524 5887 8982 0029</nfe-key>
+            <nfe-key>5316 0100 2346 2004 2270 0882 6906 4379 5156 7844 8973</nfe-key>
+            <nfe-key>2416 0199 5643 8207 8924 4703 4983 7491 0132 1153 2500</nfe-key>
+          </nfe-keys>
+        </request>
 
 + Response 200 (application/xml)
     Em caso de sucesso
 
+    + Attributes(Response Base)
+
+        + `nfe-validation-bundle` (object) - Representa o objeto de validação em lote da nota fiscal.
+          + `id` (string) - Identificador da validação em lote da nota fiscal.
+
     + Body
 
-            <xml>
-                <numero-do-lote>123123123</numero-do-lote>
-                <mensagem>Solicitação de validação aceita.</mensagem>
-            </xml>
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">100</code>
+              <description>O lote foi aceito e será processado.</description>
+              <success type="boolean">true</success>
+              <nfe-validation-bundle>
+                <id>57b77bd24f707366173a76e0</id>
+              </nfe-validation-bundle>
+            </response>
+
+
++ Response 400 (application/xml)
+    Formato inválido
+
+    + Attributes(Response Base)
+
+    + Body
+
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">200</code>
+              <description>Formato inválido.</description>
+              <success type="boolean">false</success>
+            </response>
+
++ Response 404 (application/xml)
+    Agente não existe
+
+    + Attributes(Response Base)
+
+    + Body
+
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">201</code>
+              <description>Agente não existe.</description>
+              <success type="boolean">false</success>
+            </response>
+
+### Consulta de Status das validações de NF-e [GET /v1/nfe-validations{?by_bundle_ids}{?since_time}{?until_time}]
+
++ Parameters
+
+    + by_bundle_ids (optional, array) - Identificadores dos lotes de validação de nota fiscal.
+        + id (string) - Identificador do lote de validação de nota fiscal.
+    + since_time (optional, time) - Filtro de tempo criação da validação, retorna todas as validações criadas desde o tempo especificado.
+    + until_time (optional, time) - Filtro de tempo criação da validação, retorna todas as validações criadas até o tempo especificado.
+
++ Response 200 (application/xml)
+    Em caso de sucesso
+
+    + Attributes(Response Base)
+
+        + `nfe-validations` (array[NfeValidation]) - Lista de validações de nota fiscal.
+
+    + Body
+
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">101</code>
+              <description>...</description>
+              <success type="boolean">true</success>
+              <nfe-validations type="array">
+                <nfe-validation>
+                  <id>57b77bd24f707366173a76e0</id>
+                  <status>
+                    <code>100</code>
+                    <message>Pendente de captura de dados básicos</message>
+                  </status>
+                  <agent-id>57b7876a4f707366173a76e1</agent-id>
+                  <emitter-cnpj>75.369.625/8166-71</emitter-cnpj>
+                  <receiver-cnpj>97.718.004/5909-41</receiver-cnpj>
+                  <document-number>143160012650059</document-number>
+                  <nfe-key>5316 0100 2346 2004 2270 0882 6906 4379 5156 7844 8973</nfe-key>
+                  <expiration-date type="datetime">2016-08-19T13:27:53-03:00</expiration-date>
+                </nfe-validation>
+                <nfe-validation>
+                  <id>57ab9abb4f707364d6c251ca</id>
+                  <status>
+                    <code>200</code>
+                    <message>Pendente de processamento de dados básicos</message>
+                  </status>
+                  <agent-id>57b7876a4f707366173a76e1</agent-id>
+                  <emitter-cnpj>75.369.625/8166-71</emitter-cnpj>
+                  <receiver-cnpj>97.718.004/5909-41</receiver-cnpj>
+                  <document-number>143160012650059</document-number>
+                  <expiration-date type="datetime">2016-08-19T13:27:53-03:00</expiration-date>
+                </nfe-validation>
+              </nfe-validations>
+            </response>
 
 + Response 400 (application/xml)
     Formato inválido
 
     + Body
 
-            <xml>
-                <codigo-de-erro>1</codigo-de-erro>
-                <mensagem>Formato inválido</mensagem>
-            </xml>
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">200</code>
+              <description>Formato inválido.</description>
+              <success type="boolean">false</success>
+            </response>
 
-+ Response 404 (application/xml)
-    Agente não existe
-
-    + Body
-
-            <xml>
-                <codigo-de-erro>2</codigo-de-erro>
-                <mensagem>Agente não cadastrado.</mensagem>
-            </xml>
-
-### Consulta de Status de validação de NF-e [GET /v1/validacao-nfe-em-lote/{lote}]
+### Consulta de dados da NF-e [GET /v1/nfe-validations/{nfe-validation-id}/nfe]
 
 + Parameters
-    + protocolo (number) - Protocolo da solicitação da validação
+
+    + `nfe-validation-id` (string, required) - Identificador da validação de nota fiscal.
 
 + Response 200 (application/xml)
-    Em caso de sucesso
+    NFe pertencente a validação de nota fiscal
 
     + Body
 
-            <xml>
-                <data-de-solicitacao>12/02/2016</data-de-solicitacao>
-                <validacao-status>Processando / Concluido</validacao-status>
-                <validacao-nfe-lote>
-                    <validacao-nfe>
-                        <nfe>123</nfe>
-                        <status>pendente</status>
-                    </validacao-nfe>
-                    <validacao-nfe>
-                        <nfe>133</nfe>
-                        <status>processando</status>
-                    </validacao-nfe>
-                    <validacao-nfe>
-                        <nfe>423</nfe>
-                        <status>concluido</status>
-                    </validacao-nfe>
-                </validacao-nfe-lote>
-            </xml>
-
-### Consulta de dados da NF-e [GET /v1/nfe/{chaveNFe}{?protocoloValidacaoNfe}]
-
-+ Parameters
-    + chaveNFe - Chave da nota fiscal eletrônica (NF-e)
-    + protocoloValidacaoNfe (number, required) - Protocolo da solicitação da validação
-
-+ Response 200 (application/xml)
-    NFe pertence ao lote validado
-
-    + Body
-
-            <xml>
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">200</code>
+              <description>Formato inválido.</description>
+              <success type="boolean">false</success>
+              <nfe>
+                <chave-acesso>12-3456-78.909.876/5432-10-12-345-678.909.876-543.210.123-4</chave-acesso>
+                <cobranca>
+                    <fatura>
+                        <numero>000000</numero>
+                        <valor-original>10.000,10</valor-original>
+                        <valor-desconto>0,10</valor-desconto>
+                        <valor-liquido>10.000,00</valor-liquido>
+                        <normalizado-valor-original>10000.1</normalizado-valor-original>
+                        <normalizado-valor-desconto>0.1</normalizado-valor-desconto>
+                        <normalizado-valor-liquido>10000</normalizado-valor-liquido>
+                    </fatura>
+                    <duplicatas>
+                        <duplicata>
+                            <numero>123456-78</numero>
+                            <vencimento>01/12/2016</vencimento>
+                            <valor>5.000,00</valor>
+                            <normalizado-valor>5000</normalizado-valor>
+                        </duplicata>
+                    </duplicatas>
+                </cobranca>
+                <destinatario>
+                    <nome>EMPRESA FANTASIA LTDA.</nome>
+                    <cnpj>01.234.567/8901-23</cnpj>
+                    <cpf />
+                    <endereco>AVENIDA COMERCIAL, 201</endereco>
+                    <bairro>PRACA CENTRAL</bairro>
+                    <cep>01234-567</cep>
+                    <municipio>0000000 - AGUAS BRANCAS</municipio>
+                    <telefone>(01)98765-4321</telefone>
+                    <uf>AC</uf>
+                    <pais>1058 - BRASIL</pais>
+                    <indicador-ie>01 - Contribuinte ICMS</indicador-ie>
+                    <ie>123456789</ie>
+                    <suframa />
+                    <im />
+                    <email>comercial@fantasia.com.br</email>
+                    <normalizado-cnpj>01234567890123</normalizado-cnpj>
+                    <normalizado-cpf />
+                    <normalizado-cep>01234567</normalizado-cep>
+                    <normalizado-municipio>0000000</normalizado-municipio>
+                    <normalizado-pais>1058</normalizado-pais>
+                    <normalizado-indicador-ie>1</normalizado-indicador-ie>
+                </destinatario>
+                <emitente>
+                    <nome>COMERCIO DE OBJETOS LTDA.</nome>
+                    <nome-fantasia>OBJETOCOM</nome-fantasia>
+                    <cnpj>32.109.876/5432-10</cnpj>
+                    <cpf />
+                    <endereco>AVENIDA COMERCIAL, 102</endereco>
+                    <bairro>PRACA CENTRAL</bairro>
+                    <cep>01234-567</cep>
+                    <municipio>0000000 - AGUAS BRANCAS</municipio>
+                    <telefone>(01)97531-2468</telefone>
+                    <uf>AC</uf>
+                    <pais>1058 - BRASIL</pais>
+                    <indicador-ie>01 - Contribuinte ICMS</indicador-ie>
+                    <ie>987654321</ie>
+                    <suframa />
+                    <im />
+                    <email>comercial@objetos.com.br</email>
+                    <normalizado-cnpj>32109876543210</normalizado-cnpj>
+                    <normalizado-cpf />
+                    <normalizado-cep>01234567</normalizado-cep>
+                    <normalizado-municipio>0000000</normalizado-municipio>
+                    <normalizado-pais>1058</normalizado-pais>
+                    <normalizado-indicador-ie>1</normalizado-indicador-ie>
+                    <municipio-icms>0101010</municipio-icms>
+                    <cnae />
+                </emitente>
+                <info-adicionais>
+                    <formato-impressao>1 - DANFE normal, retrato</formato-impressao>
+                    <informacoes-complementares>PEDIDO: 123456</informacoes-complementares>
+                    <normalizado-formato-impressao>1</normalizado-formato-impressao>
+                    <compra>
+                        <nota-empenho />
+                        <pedido />
+                        <contrato />
+                    </compra>
+                </info-adicionais>
+                <local>
+                    <cnpj />
+                    <cpf />
+                    <endereco />
+                    <bairro />
+                    <municipio />
+                    <uf />
+                    <normalizado-cnpj />
+                    <normalizado-cpf />
+                    <normalizado-municipio />
+                </local>
                 <nfe>
-                    <chave-acesso>12-3456-78.909.876/5432-10-12-345-678.909.876-543.210.123-4</chave-acesso>
-                    <cobranca>
-                        <fatura>
-                            <numero>000000</numero>
-                            <valor-original>10.000,10</valor-original>
-                            <valor-desconto>0,10</valor-desconto>
-                            <valor-liquido>10.000,00</valor-liquido>
-                            <normalizado-valor-original>10000.1</normalizado-valor-original>
-                            <normalizado-valor-desconto>0.1</normalizado-valor-desconto>
-                            <normalizado-valor-liquido>10000</normalizado-valor-liquido>
-                        </fatura>
-                        <duplicatas>
-                            <duplicata>
-                                <numero>123456-78</numero>
-                                <vencimento>01/12/2016</vencimento>
-                                <valor>5.000,00</valor>
-                                <normalizado-valor>5000</normalizado-valor>
-                            </duplicata>
-                        </duplicatas>
-                    </cobranca>
+                    <modelo>12</modelo>345
+                    <serie>344</serie>
+                    <numero>909876</numero>
+                    <data-emissao>01/12/2016 10:00:01-02:00</data-emissao>
+                    <data-saida-entrada>02/12/2016 10:00:01-02:00</data-saida-entrada>
+                    <valor-total>5.000,00</valor-total>
+                    <normalizado-valor-total>5103.34</normalizado-valor-total>
+                    <emitente>
+                        <cnpj>32.109.876/5432-10</cnpj>
+                        <nome>COMERCIO DE OBJETOS LTDA.</nome>
+                        <ie>987654321</ie>
+                        <uf>AC</uf>
+                        <normalizado-cnpj>32109876543210</normalizado-cnpj>
+                    </emitente>
                     <destinatario>
-                        <nome>EMPRESA FANTASIA LTDA.</nome>
                         <cnpj>01.234.567/8901-23</cnpj>
                         <cpf />
-                        <endereco>AVENIDA COMERCIAL, 201</endereco>
-                        <bairro>PRACA CENTRAL</bairro>
-                        <cep>01234-567</cep>
-                        <municipio>0000000 - AGUAS BRANCAS</municipio>
-                        <telefone>(01)98765-4321</telefone>
-                        <uf>AC</uf>
-                        <pais>1058 - BRASIL</pais>
-                        <indicador-ie>01 - Contribuinte ICMS</indicador-ie>
+                        <nome>EMPRESA FANTASIA LTDA.</nome>
                         <ie>123456789</ie>
-                        <suframa />
-                        <im />
-                        <email>comercial@fantasia.com.br</email>
+                        <uf>AC</uf>
+                        <destino-operacao>1 - Operação Interna</destino-operacao>
+                        <consumidor-final>0 - Normal</consumidor-final>
+                        <presenca-comprador>9 - Operação não presencial (outros)</presenca-comprador>
                         <normalizado-cnpj>01234567890123</normalizado-cnpj>
                         <normalizado-cpf />
-                        <normalizado-cep>01234567</normalizado-cep>
-                        <normalizado-municipio>0000000</normalizado-municipio>
+                        <normalizado-destino-operacao>1</normalizado-destino-operacao>
+                        <normalizado-consumidor-final>0</normalizado-consumidor-final>
+                        <normalizado-presenca-comprador>9</normalizado-presenca-comprador>
                         <normalizado-pais>1058</normalizado-pais>
-                        <normalizado-indicador-ie>1</normalizado-indicador-ie>
                     </destinatario>
-                    <emitente>
-                        <nome>COMERCIO DE OBJETOS LTDA.</nome>
-                        <nome-fantasia>OBJETOCOM</nome-fantasia>
-                        <cnpj>32.109.876/5432-10</cnpj>
-                        <cpf />
-                        <endereco>AVENIDA COMERCIAL, 102</endereco>
-                        <bairro>PRACA CENTRAL</bairro>
-                        <cep>01234-567</cep>
-                        <municipio>0000000 - AGUAS BRANCAS</municipio>
-                        <telefone>(01)97531-2468</telefone>
-                        <uf>AC</uf>
-                        <pais>1058 - BRASIL</pais>
-                        <indicador-ie>01 - Contribuinte ICMS</indicador-ie>
-                        <ie>987654321</ie>
-                        <suframa />
-                        <im />
-                        <email>comercial@objetos.com.br</email>
-                        <normalizado-cnpj>32109876543210</normalizado-cnpj>
-                        <normalizado-cpf />
-                        <normalizado-cep>01234567</normalizado-cep>
-                        <normalizado-municipio>0000000</normalizado-municipio>
-                        <normalizado-pais>1058</normalizado-pais>
-                        <normalizado-indicador-ie>1</normalizado-indicador-ie>
-                        <municipio-icms>0101010</municipio-icms>
-                        <cnae />
-                    </emitente>
-                    <info-adicionais>
-                        <formato-impressao>1 - DANFE normal, retrato</formato-impressao>
-                        <informacoes-complementares>PEDIDO: 123456</informacoes-complementares>
-                        <normalizado-formato-impressao>1</normalizado-formato-impressao>
-                        <compra>
-                            <nota-empenho />
-                            <pedido />
-                            <contrato />
-                        </compra>
-                    </info-adicionais>
-                    <local>
-                        <cnpj />
-                        <cpf />
-                        <endereco />
-                        <bairro />
-                        <municipio />
-                        <uf />
-                        <normalizado-cnpj />
-                        <normalizado-cpf />
-                        <normalizado-municipio />
-                    </local>
-                    <nfe>
-                        <modelo>12</modelo>345
-                        <serie>344</serie>
-                        <numero>909876</numero>
-                        <data-emissao>01/12/2016 10:00:01-02:00</data-emissao>
-                        <data-saida-entrada>02/12/2016 10:00:01-02:00</data-saida-entrada>
-                        <valor-total>5.000,00</valor-total>
-                        <normalizado-valor-total>5103.34</normalizado-valor-total>
-                        <emitente>
-                            <cnpj>32.109.876/5432-10</cnpj>
-                            <nome>COMERCIO DE OBJETOS LTDA.</nome>
-                            <ie>987654321</ie>
-                            <uf>AC</uf>
-                            <normalizado-cnpj>32109876543210</normalizado-cnpj>
-                        </emitente>
-                        <destinatario>
-                            <cnpj>01.234.567/8901-23</cnpj>
-                            <cpf />
-                            <nome>EMPRESA FANTASIA LTDA.</nome>
-                            <ie>123456789</ie>
-                            <uf>AC</uf>
-                            <destino-operacao>1 - Operação Interna</destino-operacao>
-                            <consumidor-final>0 - Normal</consumidor-final>
-                            <presenca-comprador>9 - Operação não presencial (outros)</presenca-comprador>
-                            <normalizado-cnpj>01234567890123</normalizado-cnpj>
-                            <normalizado-cpf />
-                            <normalizado-destino-operacao>1</normalizado-destino-operacao>
-                            <normalizado-consumidor-final>0</normalizado-consumidor-final>
-                            <normalizado-presenca-comprador>9</normalizado-presenca-comprador>
-                            <normalizado-pais>1058</normalizado-pais>
-                        </destinatario>
-                        <emissao>
-                            <processo>0 - com aplicativo do Contribuinte</processo>
-                            <versao>PROMOB_2_05</versao>
-                            <tipo>1 - Normal</tipo>
-                            <finalidade>1 - Normal</finalidade>
-                            <natureza-operacao>VENDAS PROD. ESTABELECIMENTO (A PRAZO)</natureza-operacao>
-                            <tipo-operacao>1 - Saída</tipo-operacao>
-                            <forma-pagamento>1 - A prazo</forma-pagamento>
-                            <digest>a840=vytMU-nrm4VE.EN9</digest>
-                            <normalizado-processo>0</normalizado-processo>
-                            <normalizado-tipo>1</normalizado-tipo>
-                            <normalizado-finalidade>1</normalizado-finalidade>
-                            <normalizado-tipo-operacao>1</normalizado-tipo-operacao>
-                            <normalizado-forma-pagamento>1</normalizado-forma-pagamento>
-                        </emissao>
-                        <situacao>AUTORIZADA</situacao>
-                        <situacao-ambiente>produção</situacao-ambiente>
-                        <eventos>
-                            <evento>
-                                <evento>Autorização de Uso</evento>
-                                <protocolo>01010101010</protocolo>
-                                <data-autorizacao>01/12/2016 às 12:00:00-02:00</data-autorizacao>
-                                <data-inclusao>25/01/2016 às 12:00:00</data-inclusao>
-                            </evento>
-                        </eventos>
-                    </nfe>
-                    <normalizado-chave-acesso>12345678909876543210123456789098765432101234</normalizado-chave-acesso>
-                    <produtos>
-                        <produto>
-                            <num>1</num>
-                            <descricao>PRODUTO CATALOGADO NA LOJA</descricao>
-                            <qtd>1</qtd>
-                            <unidade>UN</unidade>
-                            <valor>10.000,10</valor>
-                            <normalizado-valor>10000.1</normalizado-valor>
-                            <codigo>01234-123</codigo>
-                            <ncm>00012345</ncm>
-                            <cest />
-                            <ex-tipi />
-                            <cfop />
-                            <outras-despesas />
-                            <valor-desconto />
-                            <valor-frete />
-                            <valor-seguro />
-                            <composicao-valor>1 - O valor do item (vProd) compõe o valor total da NF-e (vProd)</composicao-valor>
-                            <ean-comercial>012321123</ean-comercial>
-                            <unidade-comercial>UN</unidade-comercial>
-                            <quantidade-comercial>1,0000</quantidade-comercial>
-                            <ean-tributavel>011010101</ean-tributavel>
-                            <unidade-tributavel>UN</unidade-tributavel>
-                            <quantidade-tributavel>1,0000</quantidade-tributavel>
-                            <valor-unitario-comercial>10.000,1000000000</valor-unitario-comercial>
-                            <valor-unitario-tributavel>10.000,1000000000</valor-unitario-tributavel>
-                            <numero-pedido />
-                            <item-pedido />
-                            <tributos />
-                            <fci />
-                            <icms>
-                                <origem-mercadoria>0 - Nacional</origem-mercadoria>
-                                <tributacao-icms>00 - Tributada integralmente</tributacao-icms>
-                                <modalidade />
-                                <uf />
-                            </icms>
-                            <pis>
-                                <cst>01 - Operação Tributável (base de cálculo = valor da operação alíquota normal (cumulativo/não cumulativo))</cst>
-                                <base-calculo>0,00</base-calculo>
-                                <aliquota>0,0000</aliquota>
-                                <valor>0,00</valor>
-                            </pis>
-                            <cofins>
-                                <cst>01 - Operação Tributável (base de cálculo = valor da operação alíquota normal (cumulativo/não cumulativo))</cst>
-                                <base-calculo>0,00</base-calculo>
-                                <aliquota>0,0000</aliquota>
-                                <valor>0,00</valor>
-                            </cofins>
-                        </produto>
-                    </produtos>
-                    <totais>
-                        <base-calculo-icms>0,00</base-calculo-icms>
-                        <valor-icms>0,00</valor-icms>
-                        <desonerado-icms>0,00</desonerado-icms>
-                        <base-calculo-icms-st>0,00</base-calculo-icms-st>
-                        <valor-icms-st>0,00</valor-icms-st>
-                        <valor-produtos>10.000,10</valor-produtos>
-                        <valor-frete>0,00</valor-frete>
-                        <valor-seguro>0,00</valor-seguro>
-                        <outras-despesas>0,00</outras-despesas>
-                        <valor-ipi>0,00</valor-ipi>
-                        <valor-nfe>0,00</valor-nfe>
-                        <valor-descontos>0,00</valor-descontos>
-                        <valor-ii>0,00</valor-ii>
-                        <valor-pis>0,00</valor-pis>
-                        <valor-cofins>0,00</valor-cofins>
-                        <valor-tributos />
-                        <valor-icms-fcp />
-                        <valor-icms-interestadual-dest />
-                        <valor-icms-interestadual-rem />
-                        <normalizado-base-calculo-icms>0</normalizado-base-calculo-icms>
-                        <normalizado-valor-icms>0</normalizado-valor-icms>
-                        <normalizado-desonerado-icms>0</normalizado-desonerado-icms>
-                        <normalizado-base-calculo-icms-st>0</normalizado-base-calculo-icms-st>
-                        <normalizado-valor-icms-st>0</normalizado-valor-icms-st>
-                        <normalizado-valor-produtos>10000.1</normalizado-valor-produtos>
-                        <normalizado-valor-frete>0</normalizado-valor-frete>
-                        <normalizado-valor-seguro>0</normalizado-valor-seguro>
-                        <normalizado-outras-despesas>0</normalizado-outras-despesas>
-                        <normalizado-valor-ipi>0</normalizado-valor-ipi>
-                        <normalizado-valor-nfe>0</normalizado-valor-nfe>
-                        <normalizado-valor-descontos>0</normalizado-valor-descontos>
-                        <normalizado-valor-ii>0</normalizado-valor-ii>
-                        <normalizado-valor-pis>0</normalizado-valor-pis>
-                        <normalizado-valor-cofins>0</normalizado-valor-cofins>
-                        <normalizado-valor-tributos>0</normalizado-valor-tributos>
-                        <normalizado-valor-icms-fcp>0</normalizado-valor-icms-fcp>
-                        <normalizado-valor-icms-interestadual-dest>0</normalizado-valor-icms-interestadual-dest>
-                        <normalizado-valor-icms-interestadual-rem>0</normalizado-valor-icms-interestadual-rem>
-                    </totais>
-                    <transporte>
-                        <modalidade-frete>1 - Por Conta do Destintário</modalidade-frete>
-                        <normalizado-modalidade-frete>1</normalizado-modalidade-frete>
-                        <transportador>
-                            <cnpj>12.345.677/6543-21</cnpj>
-                            <nome>TRANSPORTE DE RECURSOS EMPRESARIAIS</nome>
-                            <ie>0192837465</ie>
-                            <endereco />
-                            <municipio>ALDEIA ROXA</municipio>
-                            <uf>AC</uf>
-                            <normalizado-cnpj>12345677654321</normalizado-cnpj>
-                        </transportador>
-                        <veiculo>
-                            <placa>TRE0123</placa>
-                            <uf>AC</uf>
-                            <rntc />
-                        </veiculo>
-                    </transporte>
-                </nfe>
-            </xml>
+                    <emissao>
+                        <processo>0 - com aplicativo do Contribuinte</processo>
+                        <versao>PROMOB_2_05</versao>
+                        <tipo>1 - Normal</tipo>
+                        <finalidade>1 - Normal</finalidade>
+                        <natureza-operacao>VENDAS PROD. ESTABELECIMENTO (A PRAZO)</natureza-operacao>
+                        <tipo-operacao>1 - Saída</tipo-operacao>
+                        <forma-pagamento>1 - A prazo</forma-pagamento>
+                        <digest>a840=vytMU-nrm4VE.EN9</digest>
+                        <normalizado-processo>0</normalizado-processo>
+                        <normalizado-tipo>1</normalizado-tipo>
+                        <normalizado-finalidade>1</normalizado-finalidade>
+                        <normalizado-tipo-operacao>1</normalizado-tipo-operacao>
+                        <normalizado-forma-pagamento>1</normalizado-forma-pagamento>
+                    </emissao>
+                    <situacao>AUTORIZADA</situacao>
+                    <situacao-ambiente>produção</situacao-ambiente>
+                    <eventos>
+                        <evento>
+                            <evento>Autorização de Uso</evento>
+                            <protocolo>01010101010</protocolo>
+                            <data-autorizacao>01/12/2016 às 12:00:00-02:00</data-autorizacao>
+                            <data-inclusao>25/01/2016 às 12:00:00</data-inclusao>
+                        </evento>
+                    </eventos>
+                  </nfe>
+                  <normalizado-chave-acesso>12345678909876543210123456789098765432101234</normalizado-chave-acesso>
+                  <produtos>
+                      <produto>
+                          <num>1</num>
+                          <descricao>PRODUTO CATALOGADO NA LOJA</descricao>
+                          <qtd>1</qtd>
+                          <unidade>UN</unidade>
+                          <valor>10.000,10</valor>
+                          <normalizado-valor>10000.1</normalizado-valor>
+                          <codigo>01234-123</codigo>
+                          <ncm>00012345</ncm>
+                          <cest />
+                          <ex-tipi />
+                          <cfop />
+                          <outras-despesas />
+                          <valor-desconto />
+                          <valor-frete />
+                          <valor-seguro />
+                          <composicao-valor>1 - O valor do item (vProd) compõe o valor total da NF-e (vProd)</composicao-valor>
+                          <ean-comercial>012321123</ean-comercial>
+                          <unidade-comercial>UN</unidade-comercial>
+                          <quantidade-comercial>1,0000</quantidade-comercial>
+                          <ean-tributavel>011010101</ean-tributavel>
+                          <unidade-tributavel>UN</unidade-tributavel>
+                          <quantidade-tributavel>1,0000</quantidade-tributavel>
+                          <valor-unitario-comercial>10.000,1000000000</valor-unitario-comercial>
+                          <valor-unitario-tributavel>10.000,1000000000</valor-unitario-tributavel>
+                          <numero-pedido />
+                          <item-pedido />
+                          <tributos />
+                          <fci />
+                          <icms>
+                              <origem-mercadoria>0 - Nacional</origem-mercadoria>
+                              <tributacao-icms>00 - Tributada integralmente</tributacao-icms>
+                              <modalidade />
+                              <uf />
+                          </icms>
+                          <pis>
+                              <cst>01 - Operação Tributável (base de cálculo = valor da operação alíquota normal (cumulativo/não cumulativo))</cst>
+                              <base-calculo>0,00</base-calculo>
+                              <aliquota>0,0000</aliquota>
+                              <valor>0,00</valor>
+                          </pis>
+                          <cofins>
+                              <cst>01 - Operação Tributável (base de cálculo = valor da operação alíquota normal (cumulativo/não cumulativo))</cst>
+                              <base-calculo>0,00</base-calculo>
+                              <aliquota>0,0000</aliquota>
+                              <valor>0,00</valor>
+                          </cofins>
+                      </produto>
+                  </produtos>
+                  <totais>
+                      <base-calculo-icms>0,00</base-calculo-icms>
+                      <valor-icms>0,00</valor-icms>
+                      <desonerado-icms>0,00</desonerado-icms>
+                      <base-calculo-icms-st>0,00</base-calculo-icms-st>
+                      <valor-icms-st>0,00</valor-icms-st>
+                      <valor-produtos>10.000,10</valor-produtos>
+                      <valor-frete>0,00</valor-frete>
+                      <valor-seguro>0,00</valor-seguro>
+                      <outras-despesas>0,00</outras-despesas>
+                      <valor-ipi>0,00</valor-ipi>
+                      <valor-nfe>0,00</valor-nfe>
+                      <valor-descontos>0,00</valor-descontos>
+                      <valor-ii>0,00</valor-ii>
+                      <valor-pis>0,00</valor-pis>
+                      <valor-cofins>0,00</valor-cofins>
+                      <valor-tributos />
+                      <valor-icms-fcp />
+                      <valor-icms-interestadual-dest />
+                      <valor-icms-interestadual-rem />
+                      <normalizado-base-calculo-icms>0</normalizado-base-calculo-icms>
+                      <normalizado-valor-icms>0</normalizado-valor-icms>
+                      <normalizado-desonerado-icms>0</normalizado-desonerado-icms>
+                      <normalizado-base-calculo-icms-st>0</normalizado-base-calculo-icms-st>
+                      <normalizado-valor-icms-st>0</normalizado-valor-icms-st>
+                      <normalizado-valor-produtos>10000.1</normalizado-valor-produtos>
+                      <normalizado-valor-frete>0</normalizado-valor-frete>
+                      <normalizado-valor-seguro>0</normalizado-valor-seguro>
+                      <normalizado-outras-despesas>0</normalizado-outras-despesas>
+                      <normalizado-valor-ipi>0</normalizado-valor-ipi>
+                      <normalizado-valor-nfe>0</normalizado-valor-nfe>
+                      <normalizado-valor-descontos>0</normalizado-valor-descontos>
+                      <normalizado-valor-ii>0</normalizado-valor-ii>
+                      <normalizado-valor-pis>0</normalizado-valor-pis>
+                      <normalizado-valor-cofins>0</normalizado-valor-cofins>
+                      <normalizado-valor-tributos>0</normalizado-valor-tributos>
+                      <normalizado-valor-icms-fcp>0</normalizado-valor-icms-fcp>
+                      <normalizado-valor-icms-interestadual-dest>0</normalizado-valor-icms-interestadual-dest>
+                      <normalizado-valor-icms-interestadual-rem>0</normalizado-valor-icms-interestadual-rem>
+                  </totais>
+                  <transporte>
+                      <modalidade-frete>1 - Por Conta do Destintário</modalidade-frete>
+                      <normalizado-modalidade-frete>1</normalizado-modalidade-frete>
+                      <transportador>
+                          <cnpj>12.345.677/6543-21</cnpj>
+                          <nome>TRANSPORTE DE RECURSOS EMPRESARIAIS</nome>
+                          <ie>0192837465</ie>
+                          <endereco />
+                          <municipio>ALDEIA ROXA</municipio>
+                          <uf>AC</uf>
+                          <normalizado-cnpj>12345677654321</normalizado-cnpj>
+                      </transportador>
+                      <veiculo>
+                          <placa>TRE0123</placa>
+                          <uf>AC</uf>
+                          <rntc />
+                      </veiculo>
+                  </transporte>
+              </nfe>
+            </response>
 
 + Response 422 (application/xml)
-    NFe não pertence ao lote validado
+    NFe não pertence ao lote validado ou não existe.
 
     + Body
 
-            <xml>
-                <codigo-de-erro>1</codigo-de-erro>
-                <mensagem>Protocolo inválido</mensagem>
-            </xml>
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">204</code>
+              <description>Nfe não pertence a validação ou não existe.</description>
+              <success type="boolean">false</success>
+            </response>
 
-+ Response 406 (application/xml)
-    Protocolo não informado
-
-    + Body
-
-            <xml>
-                <codigo-de-erro>3</codigo-de-erro>
-                <mensagem>Protocolo não informado</mensagem>
-            </xml>
-
-
-## Consulta dos dados de um Participante [GET /v1/participante/{cnpj}{?protocoloValidacaoNfe}]
+### Consulta de dados de um dos participantes [GET /v1/nfe-validations/{nfe-validation-id}/participants/{participant-cnpj}]
 
 + Parameters
-    + cnpj (string) - CNPJ do participante a ser consultado
-    + protocoloValidacaoNfe (number, required) - Protocolo da solicitação da validação
+    + `nfe-validation-id` (string, required) - Identificador da validação de nota fiscal.
+    + `participant-cnpj` (string, required) - CNPJ do participante a ser consultado. Pode ser tanto o sacado quanto o cedente.
 
 + Response 200 (application/xml)
-    Caso o cnpj do participante pertença a alguma nfe do lote validado
+    Caso o CNPJ do participante pertença a validação da nota fiscal.
 
     + Body
 
-            <xml>
-                <participante>
-                    <abertura-data>01/01/2001</abertura-data>
-                    <atividade-economica>00.01-1-00 - Venda de equipamentos</atividade-economica>
-                    <atividade-economica-secundaria>01.01-1-00 - Fabricação de equipamentos</atividade-economica-secundaria>
-                    <atividade-economica-secundaria-lista>01.01-1-00 - Fabricação de equipamentos</atividade-economica-secundaria-lista>
-                    <capital-social>R$ 1.000.000,00 (Um milhão de reais)</capital-social>
-                    <cnpj>12.098.345/7654-67</cnpj>
-                    <consulta-datahora>01/12/2016 16:00:00</consulta-datahora>
-                    <efr>*****</efr>
-                    <email></email>
-                    <endereco-bairro>AREA COMERCIAL</endereco-bairro>
-                    <endereco-cep>12.345-098</endereco-cep>
-                    <endereco-complemento>CONJUNTO 1010</endereco-complemento>
-                    <endereco-logradouro>CENTRAL DE RECURSOS</endereco-logradouro>
-                    <endereco-municipio>VALE MINERAL</endereco-municipio>
-                    <endereco-numero>39</endereco-numero>
-                    <endereco-uf>AC</endereco-uf>
-                    <matriz-filial>MATRIZ</matriz-filial>
-                    <natureza-juridica>206-2 - SOCIEDADE EMPRESARIA LIMITADA</natureza-juridica>
-                    <nome-fantasia>FABRICA BRASILEIRA</nome-fantasia>
-                    <normalizado-abertura-data>01/01/2001</normalizado-abertura-data>
-                    <normalizado-capital-social>1000000</normalizado-capital-social>
-                    <normalizado-cnpj>12098345765467</normalizado-cnpj>
-                    <normalizado-consulta-datahora>01/12/2016 16:00:00</normalizado-consulta-datahora>
-                    <normalizado-endereco-cep>12345098</normalizado-endereco-cep>
-                    <normalizado-situacao-cadastral-data>01/01/2005</normalizado-situacao-cadastral-data>
-                    <normalizado-situacao-especial-data></normalizado-situacao-especial-data>
-                    <qsa>
-                        <socio>
-                            <nome>JOAO BORGES</nome>
-                            <qualificacao>49-Sócio-Administrador</qualificacao>
-                        </socio>
-                    </qsa>
-                    <razao-social>INDUSTRIA E COMERCIO DE RECURSOS COMERCIAIS LTDA.</razao-social>
-                    <situacao-cadastral>ATIVA</situacaoC-cdastral>
-                    <situacao-cadastral-data>01/01/2005</situacao-cadastral-data>
-                    <situacao-cadastral-observacoes></situacao-cadastral-observacoes>
-                    <situacao-especial>********</situacao-especial>
-                    <situacao-especial-data>********</situacao-especial-data>
-                    <telefone>(01) 9283-74651</telefone>
-                </participante>
-            </xml>
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">202</code>
+              <description>CNPJ inválido</description>
+              <success type="boolean">false</success>
+              <participante>
+                  <abertura-data>01/01/2001</abertura-data>
+                  <atividade-economica>00.01-1-00 - Venda de equipamentos</atividade-economica>
+                  <atividade-economica-secundaria>01.01-1-00 - Fabricação de equipamentos</atividade-economica-secundaria>
+                  <atividade-economica-secundaria-lista>01.01-1-00 - Fabricação de equipamentos</atividade-economica-secundaria-lista>
+                  <capital-social>R$ 1.000.000,00 (Um milhão de reais)</capital-social>
+                  <cnpj>12.098.345/7654-67</cnpj>
+                  <consulta-datahora>01/12/2016 16:00:00</consulta-datahora>
+                  <efr>*****</efr>
+                  <email></email>
+                  <endereco-bairro>AREA COMERCIAL</endereco-bairro>
+                  <endereco-cep>12.345-098</endereco-cep>
+                  <endereco-complemento>CONJUNTO 1010</endereco-complemento>
+                  <endereco-logradouro>CENTRAL DE RECURSOS</endereco-logradouro>
+                  <endereco-municipio>VALE MINERAL</endereco-municipio>
+                  <endereco-numero>39</endereco-numero>
+                  <endereco-uf>AC</endereco-uf>
+                  <matriz-filial>MATRIZ</matriz-filial>
+                  <natureza-juridica>206-2 - SOCIEDADE EMPRESARIA LIMITADA</natureza-juridica>
+                  <nome-fantasia>FABRICA BRASILEIRA</nome-fantasia>
+                  <normalizado-abertura-data>01/01/2001</normalizado-abertura-data>
+                  <normalizado-capital-social>1000000</normalizado-capital-social>
+                  <normalizado-cnpj>12098345765467</normalizado-cnpj>
+                  <normalizado-consulta-datahora>01/12/2016 16:00:00</normalizado-consulta-datahora>
+                  <normalizado-endereco-cep>12345098</normalizado-endereco-cep>
+                  <normalizado-situacao-cadastral-data>01/01/2005</normalizado-situacao-cadastral-data>
+                  <normalizado-situacao-especial-data></normalizado-situacao-especial-data>
+                  <qsa>
+                      <socio>
+                          <nome>JOAO BORGES</nome>
+                          <qualificacao>49-Sócio-Administrador</qualificacao>
+                      </socio>
+                  </qsa>
+                  <razao-social>INDUSTRIA E COMERCIO DE RECURSOS COMERCIAIS LTDA.</razao-social>
+                  <situacao-cadastral>ATIVA</situacaoC-cdastral>
+                  <situacao-cadastral-data>01/01/2005</situacao-cadastral-data>
+                  <situacao-cadastral-observacoes></situacao-cadastral-observacoes>
+                  <situacao-especial>********</situacao-especial>
+                  <situacao-especial-data>********</situacao-especial-data>
+                  <telefone>(01) 9283-74651</telefone>
+              </participante>
+            </response>
 
 + Response 422 (application/xml)
-    Caso o cnpj do participante não pertença a nenhuma nfe do lote validado
+    Caso o CNPJ do participante não pertença a validação da nfe
 
     + Body
 
-            <xml>
-                <codigo-de-erro>1</codigo-de-erro>
-                <mensagem>Protocolo inválido</mensagem>
-            </xml>
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">202</code>
+              <description>CNPJ inválido</description>
+              <success type="boolean">false</success>
+            </response>
 
 + Response 406 (application/xml)
+    Caso o CNPJ do participante não pertença a nenhuma nfe do lote validado
     Protocolo não informado
 
     + Body
 
-            <xml>
-                <codigo-de-erro>3</codigo-de-erro>
-                <mensagem>Protocolo não informado</mensagem>
-            </xml>
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">203</code>
+              <description>CNPJ inválido</description>
+              <success type="boolean">false</success>
+            </response>
 
-## Consulta das conclusões sobre uma validação de NF-e [GET /conclusoes/{nfe}{?protocoloValidacaoNfe}]
+### Consulta das conclusões sobre uma validação de NF-e [GET /v1/nfe-validations/{nfe-validation-id}/conclusions]
 
 + Parameters
-    + nfe (string) - Chave da nota a ser consultada
-    + protocoloValidacaoNfe (number, required) - Protocolo da solicitação da validação
+    + `nfe-validation-id` (string, required) - Identificador da validação de nota fiscal.
 
 + Response 200 (application/xml)
-    NFe pertence ao lote validado
 
     + Body
 
-            <xml>
-                <conclusoes>
-                    <conclusao>
-                        <mensagem>Lorem Ipsum</mensagem>
-                        <escopo>dfe</escopo>
-                        <dimensao>fiscal</dimensao>
-                        <algoritmo>Algoritmo CERC 1</algoritmo>
-                        <impacto>positivo</impacto>
-                        <mostrar-no-extrato>false</mostrar-no-extrato>
-                        <nfe-id>12345</nfe-id>
-                        <concluido-em>12/08/2016 10:00:01</concluido-em>
-                    </conclusao>
-                </conclusoes>
-            </xml>
-
-+ Response 422 (application/xml)
-    NFe não pertence ao lote validado
-
-    + Body
-
-            <xml>
-                <codigo-de-erro>1</codigo-de-erro>
-                <mensagem>Protocolo inválido</mensagem>
-            </xml>
-
-+ Response 406 (application/xml)
-    Protocolo não informado
-
-    + Body
-
-            <xml>
-                <codigo-de-erro>3</codigo-de-erro>
-                <mensagem>Protocolo não informado</mensagem>
-            </xml>
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">203</code>
+              <description>CNPJ inválido</description>
+              <success type="boolean">false</success>
+              <conclusions type="array">
+                <conclusion>
+                  <message>Dados estão coerentes</message>
+                  <scope>dfe</scope>
+                  <dimension>fiscal</dimension>
+                  <algorithm>Algoritmo 1</algorithm>
+                  <impact>positive</impact>
+                  <nfe-key>1234 ... 1234</nfe-key>
+                  <concluded-at type="datetime">2016-08-19T13:27:53-03:00</concluded-at>
+                </conclusion>
+                <conclusion>
+                  <message>Dados estão incoerentes</message>
+                  <scope>dfe</scope>
+                  <dimension>fiscal</dimension>
+                  <algorithm>Algoritmo 2</algorithm>
+                  <impact>negative</impact>
+                  <nfe-key>1234 ... 1234</nfe-key>
+                  <concluded-at type="datetime">2016-08-19T13:27:53-03:00</concluded-at>
+                </conclusion>
+              </conclusions>
+            </response>
 
 ## Registro Definitivo de Operações com Duplicata Mercantil [/v1/registro-definitivo-de-operacao-duplicata-mercantil]
 
@@ -541,3 +596,35 @@ Pendente de especificação
 ### Consulta da solicitação de promoção de registros provisorios em lote [GET /registro-provisorio-em-lote/{protocolo}]
 
 Pendente de especificação
+
+
+# Data Structures
+
+## Response Base (object)
+
++ code (number) - O código correspondente ao retorno.
+
++ description (string) - A descrição do código.
+
++ success (boolean) - Se a resposta foi bem sucedida ou não.
+
+
+## NfeValidation (object)
+
++ id (string) - Identificador da validação de nota fiscal.
+
++ status (object) - Objeto que representa o status da validação de nota fiscal.
+
+    + code (number) - Código que representa o status atual da validação de nota fiscal.
+
+    + message (string) - Descrição do código que representa o status atual da validação de nota fiscal.
+
++ `agent-id` (string) - Identificador do agente associado a validação.
+
++ `seller-cnpj` (string) - CNPJ do cedente.
+
++ `buyer-cnpj` (string) - CNPJ do sacado.
+
++ `document-number` (string) - Número identificador da duplicata informado pelo cedente na emissão da nota.
+
++ `expiration-date` (string) - Data de vencimento da duplicata.
