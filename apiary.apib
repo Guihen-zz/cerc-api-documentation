@@ -3,13 +3,16 @@ HOST: http://cerc-api-staging.herokuapp.com/
 
 # CERC API - Financiador
 
-A "CERC API - Financiador" é uma plataforma que oferece aos agentes financiadores habilitados junto à CERC um conjunto de serviços voltados para recebíveis. Esses serviços compreendem o fornecimento de informações sobre os recebíveis, sobre os documentos fiscais a estes relacionados e seus participantes. Estão disponíveis ainda serviços de consulta de informações sobre os recebíveis registrados na CERC, inclusive o monitoramento da carteira.
+A "CERC API - Financiador" é uma plataforma que oferece aos agentes financiadores habilitados junto à CERC um conjunto de serviços voltados para operações com recebíveis. Esses serviços compreendem o fornecimento de informações sobre os recebíveis, sobre os documentos fiscais a estes relacionados e sobre seus participantes. 
+Estão disponíveis ainda serviços de consulta de informações sobre os recebíveis registrados na CERC associados ao agente financiador, inclusive o monitoramento da carteira.
 
 ## Validação de NF-e em lote [/v1/nfe-validations]
 
-Conjunto de serviços que compreende a busca dos dados das notas fiscais de um lote e de seus participantes. O conjunto de informações compreende os dados disponibilizados pelo serviço de consulta de notas fiscais eletrônicas das Secretarias de Fazenda Estaduais e pelo serviço de consulta de CNPJ da Receita Federal. Sobre os dados encontrados nessas fontes, são aplicados algoritmos para verificar a elegibilidade dos recebíveis para uso como lastro de operações bancárias ou de securitização de direitos creditórios. Os dados obtidos a partir das consultas são armazenados por um determinado período e são fornecidos a partir do acionamento dos serviços descritos abaixos.
+Conjunto de serviços que compreende a busca dos dados das notas fiscais de um lote e de dados de seus participantes. O conjunto de informações compreende os dados disponibilizados pelo serviço de consulta de notas fiscais eletrônicas das Secretarias de Fazenda Estaduais e pelo serviço de consulta de CNPJ da Receita Federal. 
+Sobre os dados encontrados nessas fontes, são aplicados algoritmos para verificar a elegibilidade dos recebíveis para uso como lastro de operações bancárias ou de securitização de direitos creditórios. 
+Os dados obtidos a partir de cada consulta são armazenados por um determinado período e são fornecidos a partir do acionamento dos serviços descritos abaixo em conjunto.
 
-### Validação de NF-e em lote [POST]
+### Solicitação de validação de NF-e em lote [POST]
 
 + Attributes
 
@@ -432,7 +435,7 @@ Conjunto de serviços que compreende a busca dos dados das notas fiscais de um l
               <success type="boolean">false</success>
             </response>
 
-### Consulta de dados de um dos participantes [GET /v1/nfe-validations/{nfe-validation-id}/participants/{participant-cnpj}]
+### Consulta de dados de um participante [GET /v1/nfe-validations/{nfe-validation-id}/participants/{participant-cnpj}]
 
 + Parameters
     + `nfe-validation-id` (string, required) - Identificador da validação de nota fiscal.
@@ -516,7 +519,7 @@ Conjunto de serviços que compreende a busca dos dados das notas fiscais de um l
               <success type="boolean">false</success>
             </response>
 
-### Consulta das conclusões sobre uma validação de NF-e [GET /v1/nfe-validations/{nfe-validation-id}/conclusions]
+### Consulta das constatações CERC [GET /v1/nfe-validations/{nfe-validation-id}/conclusions]
 
 + Parameters
     + `nfe-validation-id` (string, required) - Identificador da validação de nota fiscal.
