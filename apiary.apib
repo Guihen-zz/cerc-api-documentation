@@ -5,14 +5,20 @@ HOST: http://cerc-api-staging.herokuapp.com/
 
 A CERC API é uma plataforma para auxiliar os agentes financiadores e de registro a obter mais informações sobre as operações financeiras que têm recebíveis como lastro.
 
+## Autenticação
+
+Para utilizar a API documentada, é necessário enviar o `token` de autenticação em toda requisição. Antes de fazer qualquer requisição para os endpoints documentados, consulte a sessão de autenticação para saber como obter o `token` de autenticação.
+
 ## Formato da resposta
 
-Por padrão o retorno das requisições são em XML. É possível pedir o retorno no formato `json`, adicionando ao final do `path` um `.json`:
+Para conseguir o formato da resposta da API em um determinado formato (XML ou JSON), deve ser colocado o formato ao final do `path`, da seguinte forma:
 
 Por exemplo:
 
-  - `/path/to/resource` ficaria `/path/to/resource.json`.
-  - `/path/to/resource?params1=1231` ficaria `/path/to/resource.json?params1=1231`.
+  - Para obter os dados em `json` do `/path/to/resource` ficaria `/path/to/resource.json`.
+  - Para obter os dados em `xml` do `/path/to/resource?params1=1231` ficaria `/path/to/resource.xml?params1=1231`.
+
+Os formatos válidos no momento são `json` e `xml`.
 
 ## Campo `type`
 
@@ -22,11 +28,78 @@ Para envio de dados por xml, é importante que os atributos de `type` estejam pr
 
 Em requisições com método `GET`, todos os parâmetros devem ser passados pela `query string`. Em caso de parâmetros que aceitem mais de um valor, ou seja, parâmetros que são `arrays`, elas devem ser enviadas no seguinte formato: `params[]=35&params[]=47&params[]=12`
 
+## Autenticação [/v1/authentication]
+
+A maioria dos endpoints documentados requer que as requisições venham com o `token` de acesso no campo `Authorization` do `Headers` da requisição. Ou seja:
+
+`Authorization: Bearer {access-token}`
+
+Para obter o `token` de acesso, consulta o endpoint de `Autenticação de usuário de agente`.
+
+### Autenticação de usuário de agente [GET]
+
++ Attributes
+
+    + cpf (string) - CPF do usuário de agente registrado no sistema. Deve estar com máscara no formato: `XXX.XXX.XXX-XX`.
+    + password (string) - Senha de acesso do usuário de agente associado ao CPF.
+    + type (string) - Tipo de usuário que deseja se autenticar. Para autenticação de usuário de agente, enviar o valor `agent_user`
+
++ Request (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <request>
+          <cpf>073.008.792-17</cpf>
+          <password>123123123</password>
+          <type>agent_user</type>
+        </request>
+
++ Response 200 (application/xml)
+
+    + Attributes(Response Base)
+
+        + `access-token` (string) - `Token` de autenticação que deve ser enviado nas requisições para os outros endpoints.
+        + `user` (Agent User)
+
+    + Body
+
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">200</code>
+              <description>Sucesso</description>
+              <access-token>57b77bd24f707366173a76e0</access-token>
+              <user>
+                <name>Luiz Paulo</name>
+                <email>luiz.paulo@gmail.com</email>
+                <telephone-number>(11) 12345-1234</telephone-number>
+              </user>
+            </response>
+
+
++ Response 422 (application/xml)
+
+    Caso o CPF não exista e/ou a senha não está de acordo com o CPF.
+
+    + Attributes(Response Base)
+
+    + Body
+
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">422</code>
+              <description>Combinação de CPF e senha inválidos.</description>
+            </response>
+
 ## Validação de NF-e [/v1/nfe-validations]
 
 O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados existentes sobre cada nota fiscal presente no lote. Os dados considerados são os disponibilizados pelo serviço de consulta de notas fiscais da Secretaria da Fazenda e pelo serviço de consulta de CNPJ da Receita Federal. Sobre os dados encontrados na pesquisa, são aplicados algoritmos para verificar a elegibilidade do documento fiscal para uso como lastro de operação financeira de transferência de direitos creditórios. Os dados encontrados na consulta da nota fiscal e nas consultas dos participantes da operação mercantil, junto a Receita Federal, são armazenados por um determinado período de tempo e poderão ser consultados através de outro serviço que será descrito abaixo.
 
 ### Validação de NF-e em lote [POST]
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer {token}
 
 + Attributes
 
@@ -94,6 +167,12 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
 ### Consulta de Status das validações de NF-e [GET /v1/nfe-validations{?agent_id}{?by_bundle_ids[]}{?since_time}{?until_time}]
 
++ Request
+
+    + Headers
+
+            Authorization: Bearer {token}
+
 + Parameters
 
     + agent_id (required, string) - Identificadores do agente financiador registrado no momento da criação de validação de nota fiscal.
@@ -111,6 +190,8 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
     Cada validação contém os dados referente a validação de uma nota fiscal individual, ou seja, para cada nota enviada na criação de validação em lote.
 
     Caso nenhum filtro opcional seja enviado, o filtro padrão aplicado. (QUAL O FILTRO PADRÃO?)
+
+    O campo `id` da validação só será adicionado quando o status da validação for `Concluido com sucesso`.
 
     + Attributes(Response Base)
 
@@ -178,6 +259,12 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
             </response>
 
 ### Consulta de dados da NF-e [GET /v1/nfe-validations/{nfe-validation-id}/nfe]
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer {token}
 
 + Parameters
 
@@ -463,7 +550,13 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
               <description>Validação não existe ou você não tem autorização de consultar seus dados.</description>
             </response>
 
-### Consulta de dados de cedente [GET /v1/nfe-validations/{nfe-validation-id}/receiver]
+### Consulta de dados de cedente [GET /v1/nfe-validations/{nfe-validation-id}/seller]
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer {token}
 
 + Parameters
 
@@ -531,7 +624,13 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
               <description>Validação não existe ou você não tem autorização de consultar seus dados.</description>
             </response>
 
-### Consulta de dados de sacado [GET /v1/nfe-validations/{nfe-validation-id}/emitter]
+### Consulta de dados de sacado [GET /v1/nfe-validations/{nfe-validation-id}/buyer]
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer {token}
 
 + Parameters
 
@@ -600,6 +699,12 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
             </response>
 
 ### Consulta das conclusões sobre uma validação de NF-e [GET /v1/nfe-validations/{nfe-validation-id}/conclusions]
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer {token}
 
 + Parameters
 
@@ -700,6 +805,14 @@ Pendente de especificação
 
 + description (string) - A descrição do código.
 
+
+## Agent User (object)
+
++ name (string) - Identificador do usuário de agente.
+
++ email (string) - Email do usuário de agente.
+
++ `telephone-number` (string) - Telefone do usuário de agente. Vem com máscara no formato: `(XX) XXXXX-XXXX`
 
 ## NfeValidation (object)
 
