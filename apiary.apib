@@ -5,6 +5,23 @@ HOST: http://cerc-api-staging.herokuapp.com/
 
 A CERC API é uma plataforma para auxiliar os agentes financiadores e de registro a obter mais informações sobre as operações financeiras que têm recebíveis como lastro.
 
+## Formato da resposta
+
+Por padrão o retorno das requisições são em XML. É possível pedir o retorno no formato `json`, adicionando ao final do `path` um `.json`:
+
+Por exemplo:
+
+  - `/path/to/resource` ficaria `/path/to/resource.json`.
+  - `/path/to/resource?params1=1231` ficaria `/path/to/resource.json?params1=1231`.
+
+## Campo `type`
+
+Para envio de dados por xml, é importante que os atributos de `type` estejam presentes com os valores corretos. Ou seja, para indicar que um campo é `integer`, deve se adicionar o atributo `type="integer"`. O mesmo vale para campos do tipo `array`, `datetime` e `time`. Para os valores `string`, o atributo `type` é opcional, não influenciando no resultado.
+
+## Múltiplos parâmetros em `query string`
+
+Em requisições com método `GET`, todos os parâmetros devem ser passados pela `query string`. Em caso de parâmetros que aceitem mais de um valor, ou seja, parâmetros que são `arrays`, elas devem ser enviadas no seguinte formato: `params[]=35&params[]=47&params[]=12`
+
 ## Validação de NF-e [/v1/nfe-validations]
 
 O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados existentes sobre cada nota fiscal presente no lote. Os dados considerados são os disponibilizados pelo serviço de consulta de notas fiscais da Secretaria da Fazenda e pelo serviço de consulta de CNPJ da Receita Federal. Sobre os dados encontrados na pesquisa, são aplicados algoritmos para verificar a elegibilidade do documento fiscal para uso como lastro de operação financeira de transferência de direitos creditórios. Os dados encontrados na consulta da nota fiscal e nas consultas dos participantes da operação mercantil, junto a Receita Federal, são armazenados por um determinado período de tempo e poderão ser consultados através de outro serviço que será descrito abaixo.
@@ -13,9 +30,8 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
 + Attributes
 
-    + `agent-id` (string) - Identificador do agente.
-    + `nfe-keys` (array) - Lista de chaves de nota fiscais.
-        + `nfe-key` (string) - Chave de nota fiscal.
+    + `agent-id` (string) - Identificador do agente financiador ao qual será associada a validação.
+    + `nfe-keys` (array[string]) - Lista de chaves de nota fiscais que se deseja validar. Cada chave de nota fiscal deve estar com máscara no formato: `"**** **** **** **** **** **** **** **** **** **** ****"`
 
 + Request (application/xml)
 
@@ -36,38 +52,21 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
     + Attributes(Response Base)
 
-        + `nfe-validation-bundle` (object) - Representa o objeto de validação em lote da nota fiscal.
-          + `id` (string) - Identificador da validação em lote da nota fiscal.
-
-    + Body
-
-            <?xml version="1.0" encoding="UTF-8"?>
-            <response>
-              <code type="integer">100</code>
-              <description>O lote foi aceito e será processado.</description>
-              <success type="boolean">true</success>
-              <nfe-validation-bundle>
-                <id>57b77bd24f707366173a76e0</id>
-              </nfe-validation-bundle>
-            </response>
-
-
-+ Response 400 (application/xml)
-    Formato inválido
-
-    + Attributes(Response Base)
+        + `nfe-validation-bundle-id` (string) - Identificador da validação em lote da nota fiscal.
 
     + Body
 
             <?xml version="1.0" encoding="UTF-8"?>
             <response>
               <code type="integer">200</code>
-              <description>Formato inválido.</description>
-              <success type="boolean">false</success>
+              <description>O lote foi aceito e será processado.</description>
+              <nfe-validation-bundle-id>57b77bd24f707366173a76e0</nfe-validation-bundle-id>
             </response>
 
-+ Response 404 (application/xml)
-    Agente não existe
+
++ Response 400 (application/xml)
+
+    Formato inválido.
 
     + Attributes(Response Base)
 
@@ -75,22 +74,43 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
             <?xml version="1.0" encoding="UTF-8"?>
             <response>
-              <code type="integer">201</code>
-              <description>Agente não existe.</description>
-              <success type="boolean">false</success>
+              <code type="integer">400</code>
+              <description>Formato inválido.</description>
             </response>
 
-### Consulta de Status das validações de NF-e [GET /v1/nfe-validations{?by_bundle_ids}{?since_time}{?until_time}]
++ Response 422 (application/xml)
+
+    Agente especificado não existe.
+
+    + Attributes(Response Base)
+
+    + Body
+
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">422</code>
+              <description>Agente especificado não existe.</description>
+            </response>
+
+### Consulta de Status das validações de NF-e [GET /v1/nfe-validations{?agent_id}{?by_bundle_ids[]}{?since_time}{?until_time}]
 
 + Parameters
 
-    + by_bundle_ids (optional, array) - Identificadores dos lotes de validação de nota fiscal.
-        + id (string) - Identificador do lote de validação de nota fiscal.
-    + since_time (optional, time) - Filtro de tempo criação da validação, retorna todas as validações criadas desde o tempo especificado.
-    + until_time (optional, time) - Filtro de tempo criação da validação, retorna todas as validações criadas até o tempo especificado.
+    + agent_id (required, string) - Identificadores do agente financiador registrado no momento da criação de validação de nota fiscal.
+
+    + `by_bundle_ids[]` (optional, array[string]) - Identificadores dos lotes de validação de nota fiscal. Aceita múltiplos valores na forma: `?by_bundle_ids[]=35&by_bundle_ids[]=47&by_bundle_ids[]=12`
+
+    + since_time (optional, time) - Tempo no formato iso8601, para especificar a data mais antiga das validações desejadas.
+
+    + until_time (optional, time) - Tempo no formato iso8601, para especificar a data mais recente das validações desejadas.
 
 + Response 200 (application/xml)
-    Em caso de sucesso
+
+    Em caso de sucesso, será retornado uma lista com as validações de nota fiscal que passarem no filtro dos parâmetros.
+
+    Cada validação contém os dados referente a validação de uma nota fiscal individual, ou seja, para cada nota enviada na criação de validação em lote.
+
+    Caso nenhum filtro opcional seja enviado, o filtro padrão aplicado. (QUAL O FILTRO PADRÃO?)
 
     + Attributes(Response Base)
 
@@ -100,48 +120,61 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
             <?xml version="1.0" encoding="UTF-8"?>
             <response>
-              <code type="integer">101</code>
-              <description>...</description>
-              <success type="boolean">true</success>
+              <code type="integer">200</code>
+              <description>Sucesso</description>
               <nfe-validations type="array">
                 <nfe-validation>
                   <id>57b77bd24f707366173a76e0</id>
-                  <status>
-                    <code>100</code>
-                    <message>Pendente de captura de dados básicos</message>
-                  </status>
+                  <status>Pendente de captura de dados básicos</status>
                   <agent-id>57b7876a4f707366173a76e1</agent-id>
                   <emitter-cnpj>75.369.625/8166-71</emitter-cnpj>
                   <receiver-cnpj>97.718.004/5909-41</receiver-cnpj>
-                  <document-number>143160012650059</document-number>
                   <nfe-key>5316 0100 2346 2004 2270 0882 6906 4379 5156 7844 8973</nfe-key>
-                  <expiration-date type="datetime">2016-08-19T13:27:53-03:00</expiration-date>
+                  <solicitated-date type="datetime">2016-08-19T13:27:53-03:00</solicitated-date>
                 </nfe-validation>
                 <nfe-validation>
                   <id>57ab9abb4f707364d6c251ca</id>
-                  <status>
-                    <code>200</code>
-                    <message>Pendente de processamento de dados básicos</message>
-                  </status>
+                  <status>Pendente de processamento dos dados básicos</status>
                   <agent-id>57b7876a4f707366173a76e1</agent-id>
                   <emitter-cnpj>75.369.625/8166-71</emitter-cnpj>
                   <receiver-cnpj>97.718.004/5909-41</receiver-cnpj>
-                  <document-number>143160012650059</document-number>
-                  <expiration-date type="datetime">2016-08-19T13:27:53-03:00</expiration-date>
+                  <nfe-key>5316 0100 2346 2004 2270 0882 6906 4379 5156 7844 8973</nfe-key>
+                  <solicitated-date type="datetime">2016-08-19T13:27:53-03:00</solicitated-date>
+                </nfe-validation>
+                <nfe-validation>
+                  <id>57ab9abb4f707364d6c251ca</id>
+                  <status>Falha na criação de validação</status>
+                  <agent-id>57b7876a4f707366173a76e1</agent-id>
+                  <nfe-key>53168973</nfe-key>
+                  <solicitated-date type="datetime">2016-08-19T13:27:53-03:00</solicitated-date>
+                  <errors type="array">
+                    <error>Chave de nota fiscal inválida</error>
+                    <error>Chave de nota fiscal com máscara inválida</error>
+                  </errors>
                 </nfe-validation>
               </nfe-validations>
             </response>
 
 + Response 400 (application/xml)
-    Formato inválido
+    Agente não especificado.
 
     + Body
 
             <?xml version="1.0" encoding="UTF-8"?>
             <response>
-              <code type="integer">200</code>
-              <description>Formato inválido.</description>
-              <success type="boolean">false</success>
+              <code type="integer">400</code>
+              <description>Agente não especificado.</description>
+            </response>
+
++ Response 422 (application/xml)
+    Agente especificado não exite ou você não tem acesso as validações dele.
+
+    + Body
+
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">422</code>
+              <description>Agente especificado não exite ou você não tem acesso as validações dele.</description>
             </response>
 
 ### Consulta de dados da NF-e [GET /v1/nfe-validations/{nfe-validation-id}/nfe]
@@ -151,15 +184,14 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
     + `nfe-validation-id` (string, required) - Identificador da validação de nota fiscal.
 
 + Response 200 (application/xml)
-    NFe pertencente a validação de nota fiscal
+    NFe pertencente a validação de nota fiscal.
 
     + Body
 
             <?xml version="1.0" encoding="UTF-8"?>
             <response>
               <code type="integer">200</code>
-              <description>Formato inválido.</description>
-              <success type="boolean">false</success>
+              <description>Sucesso</description>
               <nfe>
                 <chave-acesso>12-3456-78.909.876/5432-10-12-345-678.909.876-543.210.123-4</chave-acesso>
                 <cobranca>
@@ -421,33 +453,30 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
             </response>
 
 + Response 422 (application/xml)
-    NFe não pertence ao lote validado ou não existe.
+    Validação não existe ou você não tem autorização de consultar seus dados.
 
     + Body
 
             <?xml version="1.0" encoding="UTF-8"?>
             <response>
-              <code type="integer">204</code>
-              <description>Nfe não pertence a validação ou não existe.</description>
-              <success type="boolean">false</success>
+              <code type="integer">422</code>
+              <description>Validação não existe ou você não tem autorização de consultar seus dados.</description>
             </response>
 
-### Consulta de dados de um dos participantes [GET /v1/nfe-validations/{nfe-validation-id}/participants/{participant-cnpj}]
+### Consulta de dados de cedente [GET /v1/nfe-validations/{nfe-validation-id}/receiver]
 
 + Parameters
+
     + `nfe-validation-id` (string, required) - Identificador da validação de nota fiscal.
-    + `participant-cnpj` (string, required) - CNPJ do participante a ser consultado. Pode ser tanto o sacado quanto o cedente.
 
 + Response 200 (application/xml)
-    Caso o CNPJ do participante pertença a validação da nota fiscal.
 
     + Body
 
             <?xml version="1.0" encoding="UTF-8"?>
             <response>
-              <code type="integer">202</code>
-              <description>CNPJ inválido</description>
-              <success type="boolean">false</success>
+              <code type="integer">200</code>
+              <description>Sucesso</description>
               <participante>
                   <abertura-data>01/01/2001</abertura-data>
                   <atividade-economica>00.01-1-00 - Venda de equipamentos</atividade-economica>
@@ -492,33 +521,20 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
             </response>
 
 + Response 422 (application/xml)
-    Caso o CNPJ do participante não pertença a validação da nfe
+    Validação não existe ou você não tem autorização de consultar seus dados.
 
     + Body
 
             <?xml version="1.0" encoding="UTF-8"?>
             <response>
-              <code type="integer">202</code>
-              <description>CNPJ inválido</description>
-              <success type="boolean">false</success>
+              <code type="integer">422</code>
+              <description>Validação não existe ou você não tem autorização de consultar seus dados.</description>
             </response>
 
-+ Response 406 (application/xml)
-    Caso o CNPJ do participante não pertença a nenhuma nfe do lote validado
-    Protocolo não informado
-
-    + Body
-
-            <?xml version="1.0" encoding="UTF-8"?>
-            <response>
-              <code type="integer">203</code>
-              <description>CNPJ inválido</description>
-              <success type="boolean">false</success>
-            </response>
-
-### Consulta das conclusões sobre uma validação de NF-e [GET /v1/nfe-validations/{nfe-validation-id}/conclusions]
+### Consulta de dados de sacado [GET /v1/nfe-validations/{nfe-validation-id}/emitter]
 
 + Parameters
+
     + `nfe-validation-id` (string, required) - Identificador da validação de nota fiscal.
 
 + Response 200 (application/xml)
@@ -527,9 +543,80 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
             <?xml version="1.0" encoding="UTF-8"?>
             <response>
-              <code type="integer">203</code>
-              <description>CNPJ inválido</description>
-              <success type="boolean">false</success>
+              <code type="integer">200</code>
+              <description>Sucesso</description>
+              <participante>
+                  <abertura-data>01/01/2001</abertura-data>
+                  <atividade-economica>00.01-1-00 - Venda de equipamentos</atividade-economica>
+                  <atividade-economica-secundaria>01.01-1-00 - Fabricação de equipamentos</atividade-economica-secundaria>
+                  <atividade-economica-secundaria-lista>01.01-1-00 - Fabricação de equipamentos</atividade-economica-secundaria-lista>
+                  <capital-social>R$ 1.000.000,00 (Um milhão de reais)</capital-social>
+                  <cnpj>12.098.345/7654-67</cnpj>
+                  <consulta-datahora>01/12/2016 16:00:00</consulta-datahora>
+                  <efr>*****</efr>
+                  <email></email>
+                  <endereco-bairro>AREA COMERCIAL</endereco-bairro>
+                  <endereco-cep>12.345-098</endereco-cep>
+                  <endereco-complemento>CONJUNTO 1010</endereco-complemento>
+                  <endereco-logradouro>CENTRAL DE RECURSOS</endereco-logradouro>
+                  <endereco-municipio>VALE MINERAL</endereco-municipio>
+                  <endereco-numero>39</endereco-numero>
+                  <endereco-uf>AC</endereco-uf>
+                  <matriz-filial>MATRIZ</matriz-filial>
+                  <natureza-juridica>206-2 - SOCIEDADE EMPRESARIA LIMITADA</natureza-juridica>
+                  <nome-fantasia>FABRICA BRASILEIRA</nome-fantasia>
+                  <normalizado-abertura-data>01/01/2001</normalizado-abertura-data>
+                  <normalizado-capital-social>1000000</normalizado-capital-social>
+                  <normalizado-cnpj>12098345765467</normalizado-cnpj>
+                  <normalizado-consulta-datahora>01/12/2016 16:00:00</normalizado-consulta-datahora>
+                  <normalizado-endereco-cep>12345098</normalizado-endereco-cep>
+                  <normalizado-situacao-cadastral-data>01/01/2005</normalizado-situacao-cadastral-data>
+                  <normalizado-situacao-especial-data></normalizado-situacao-especial-data>
+                  <qsa>
+                      <socio>
+                          <nome>JOAO BORGES</nome>
+                          <qualificacao>49-Sócio-Administrador</qualificacao>
+                      </socio>
+                  </qsa>
+                  <razao-social>INDUSTRIA E COMERCIO DE RECURSOS COMERCIAIS LTDA.</razao-social>
+                  <situacao-cadastral>ATIVA</situacaoC-cdastral>
+                  <situacao-cadastral-data>01/01/2005</situacao-cadastral-data>
+                  <situacao-cadastral-observacoes></situacao-cadastral-observacoes>
+                  <situacao-especial>********</situacao-especial>
+                  <situacao-especial-data>********</situacao-especial-data>
+                  <telefone>(01) 9283-74651</telefone>
+              </participante>
+            </response>
+
++ Response 422 (application/xml)
+    Validação não existe ou você não tem autorização de consultar seus dados.
+
+    + Body
+
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">422</code>
+              <description>Validação não existe ou você não tem autorização de consultar seus dados.</description>
+            </response>
+
+### Consulta das conclusões sobre uma validação de NF-e [GET /v1/nfe-validations/{nfe-validation-id}/conclusions]
+
++ Parameters
+
+    + `nfe-validation-id` (string, required) - Identificador da validação de nota fiscal.
+
++ Response 200 (application/xml)
+
+    + Attributes(Response Base)
+
+        + `conclusions` (array[NfeValidationConclusion]) - Lista de conslusões sobre a validação da nota fiscal.
+
+    + Body
+
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">200</code>
+              <description>Sucesso</description>
               <conclusions type="array">
                 <conclusion>
                   <message>Dados estão coerentes</message>
@@ -537,8 +624,8 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
                   <dimension>fiscal</dimension>
                   <algorithm>Algoritmo 1</algorithm>
                   <impact>positive</impact>
-                  <nfe-key>1234 ... 1234</nfe-key>
-                  <concluded-at type="datetime">2016-08-19T13:27:53-03:00</concluded-at>
+                  <nfe-key>1616 0172 3514 6459 2140 9595 6962 7754 2902 4102 8783</nfe-key>
+                  <concluded-date type="datetime">2016-08-19T13:27:53-03:00</concluded-date>
                 </conclusion>
                 <conclusion>
                   <message>Dados estão incoerentes</message>
@@ -546,8 +633,8 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
                   <dimension>fiscal</dimension>
                   <algorithm>Algoritmo 2</algorithm>
                   <impact>negative</impact>
-                  <nfe-key>1234 ... 1234</nfe-key>
-                  <concluded-at type="datetime">2016-08-19T13:27:53-03:00</concluded-at>
+                  <nfe-key>1616 0172 3514 6459 2140 9595 6962 7754 2902 4102 8783</nfe-key>
+                  <concluded-date type="datetime">2016-08-19T13:27:53-03:00</concluded-date>
                 </conclusion>
               </conclusions>
             </response>
@@ -613,18 +700,12 @@ Pendente de especificação
 
 + description (string) - A descrição do código.
 
-+ success (boolean) - Se a resposta foi bem sucedida ou não.
-
 
 ## NfeValidation (object)
 
 + id (string) - Identificador da validação de nota fiscal.
 
-+ status (object) - Objeto que representa o status da validação de nota fiscal.
-
-    + code (number) - Código que representa o status atual da validação de nota fiscal.
-
-    + message (string) - Descrição do código que representa o status atual da validação de nota fiscal.
++ status (string) - Status atual da validação de nota fiscal.
 
 + `agent-id` (string) - Identificador do agente associado a validação.
 
@@ -632,6 +713,20 @@ Pendente de especificação
 
 + `buyer-cnpj` (string) - CNPJ do sacado.
 
-+ `document-number` (string) - Número identificador da duplicata informado pelo cedente na emissão da nota.
++ `solicitated-date` (string) - Data no formato iso8601 da soliticação da validação de nota fiscal. Ou seja, data de solicitação da validação em lote a que essa validação está associada.
 
-+ `expiration-date` (string) - Data de vencimento da duplicata.
+## NfeValidationConclusion (object)
+
++ message (string) - Mensagem da conclusão.
+
++ scope (string) - Escopo da conclusão.
+
++ dimension (string) - Dimensão da conclusão.
+
++ algorithm (string) - Algoritmo utilizado na conclusão.
+
++ impact (string) - Impacto resultante da conclusão.
+
++ `nfe-key` (string) - Chave da nota referente a conclusão.
+
++ `concluded-date` (string) - Data no formato iso8601 em que a conclusão foi gerada.
