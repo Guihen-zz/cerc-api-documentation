@@ -557,9 +557,10 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
 
 ## Registro Definitivo de Operações com Duplicata Mercantil [/v1/registro-definitivo-de-operacao-duplicata-mercantil]
 
-Registrar uma operação recebível significa informar que irá performar uma operação financeira que tem como lastro seus direitos creditorios.
-Registrando uma operação com um recebível, o Agente garante que o mesmo recebível não será registrado para a operação de nenhum outro Agente na CERC.
-O Registro definitivo é o processo mais completo de registro de operação com recebiveis disponível na CERC. Este processo envolve a pesquisa dos dados disponíveis para a NF-e e os CNPJ de Cedente e Sacado, quem incluem dados sobre a operação, dados fiscais, de cobrança, informações fiscais dos participantes da operação, dados de transporte e outros.
+Ao registrar uma operação na CERC, o agente registrador informa à CERC os dados dos recebíveis que pretende adquirir ou vincular como garantia de uma operação de crédito. 
+Uma vez confirmado o registro pela CERC, os recebíveis estarão associados como lastro da operação do agente financiador indicado.
+Realizando o registro da operação com recebíveis na CERC, o agente financiador evita que o mesmo recebível seja cedido ou vinculado a operação de outro agente financiador habilitado junto à CERC.
+O Registro definitivo é um serviço que compreende o processo de validação de NFe como requisito. Assim, o registro não será realizado caso seja identificada indisponibilidade do recebível ou inconsistências no documento fiscal associado.
 
 ### Registro definitivo de operações com duplicata mercantil [POST]
 
