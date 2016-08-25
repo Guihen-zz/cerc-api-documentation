@@ -1,13 +1,13 @@
 FORMAT: 1A
 HOST: http://cerc-api-staging.herokuapp.com/
 
-# CERC API
+# CERC API - Financiador
 
-A CERC API - Financiador é uma plataforma para auxiliar os agentes financiadores e de registro a obter mais informações sobre as operações financeiras que têm recebíveis como lastro.
+A "CERC API - Financiador" é uma plataforma que oferece aos agentes financiadores habilitados junto à CERC um conjunto de serviços voltados para recebíveis. Esses serviços compreendem o fornecimento de informações sobre os recebíveis, sobre os documentos fiscais a estes relacionados e seus participantes. Estão disponíveis ainda serviços de consulta de informações sobre os recebíveis registrados na CERC, inclusive o monitoramento da carteira.
 
-## Validação de NF-e [/v1/nfe-validations]
+## Validação de NF-e em lote [/v1/nfe-validations]
 
-O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados existentes sobre cada nota fiscal presente no lote. Os dados considerados são os disponibilizados pelo serviço de consulta de notas fiscais da Secretaria da Fazenda e pelo serviço de consulta de CNPJ da Receita Federal. Sobre os dados encontrados na pesquisa, são aplicados algoritmos para verificar a elegibilidade do documento fiscal para uso como lastro de operação financeira de transferência de direitos creditórios. Os dados encontrados na consulta da nota fiscal e nas consultas dos participantes da operação mercantil, junto a Receita Federal, são armazenados por um determinado período de tempo e poderão ser consultados através de outro serviço que será descrito abaixo.
+Conjunto de serviços que compreende a busca dos dados das notas fiscais de um lote e de seus participantes. O conjunto de informações compreende os dados disponibilizados pelo serviço de consulta de notas fiscais eletrônicas das Secretarias de Fazenda Estaduais e pelo serviço de consulta de CNPJ da Receita Federal. Sobre os dados encontrados nessas fontes, são aplicados algoritmos para verificar a elegibilidade dos recebíveis para uso como lastro de operações bancárias ou de securitização de direitos creditórios. Os dados obtidos a partir das consultas são armazenados por um determinado período e são fornecidos a partir do acionamento dos serviços descritos abaixos.
 
 ### Validação de NF-e em lote [POST]
 
