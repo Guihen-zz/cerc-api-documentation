@@ -156,7 +156,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
               </errors>
             </response>
 
-### Consulta de Status das validações de NF-e [GET /v1/nfe-validations{?agent_id}{?batch_ids}{?status}{?created_since}{?created_until}{?completed_since}{?completed_until}{?per_page}{?page}]
+### Consulta de Status das validações de NF-e [GET /v1/nfe-validations{?agent_id,batch_ids,status,created_since,created_until,completed_since,completed_until,per_page,page}]
 
 + Request
 
@@ -166,13 +166,13 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
 + Parameters
 
-    + agent_id (optional, string)
+    + agent_id (optional)
         Identificadores do agente financiador registrado no momento da criação de validação de nota fiscal.
 
-    + `batch_ids` (optional, string)
+    + `batch_ids` (optional)
         Identificadores dos lotes de validação de nota fiscal. Aceita múltiplos valores na forma: `?batch_ids[]=35&batch_ids[]=47&batch_ids[]=12`
 
-    + status (optional, string)
+    + status (optional)
         Filtra as validações pelo campo `status`. Sem esse valor, as validações retornadas podem ter qualquer `status`.
         + Members
             + `pendente`
@@ -180,16 +180,16 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
             + `concluido`
             + `com_erro`
 
-    + created_since (optional, string)
+    + created_since (optional)
         Tempo no formato iso8601, retorna todas as validações criadas desde o momento especificado. Por padrão o valor é o início do dia que foi feita a requisição.
 
-    + created_until (optional, string)
+    + created_until (optional)
         Tempo no formato iso8601, retorna todas as validações criadas até o momento especificado. Por padrão o valor é o momento corrente da requisição.
 
-    + completed_since (optional, string)
+    + completed_since (optional)
         Tempo no formato iso8601, retorna todas as validações completadas desde o momento especificado. Por padrão o valor é o início do dia que foi feita a requisição.
 
-    + completed_until (optional, string)
+    + completed_until (optional)
         Tempo no formato iso8601, retorna todas as validações completadas até o momento especificado. Por padrão o valor é o momento corrente da requisição.
 
     + per_page (optional, number)
@@ -247,7 +247,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
               </nfe-validations>
             </response>
 
-### Consulta de dados da NF-e [GET /v1/nfe-validations/{nfe-validation-id}/nfe]
+### Consulta de dados da NF-e [GET /v1/nfe-validations/{nfe_validation_id}/nfe]
 
 + Request
 
@@ -257,7 +257,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
 + Parameters
 
-    + `nfe-validation-id` (string, required) - Identificador da validação de nota fiscal.
+    + nfe_validation_id - Identificador da validação de nota fiscal.
 
 + Response 200 (application/xml)
     NFe pertencente a validação de nota fiscal.
@@ -530,7 +530,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
 + Response 404 (application/xml)
 
-### Consulta de dados de cedente [GET /v1/nfe-validations/{nfe-validation-id}/seller]
+### Consulta de dados de cedente [GET /v1/nfe-validations/{nfe_validation_id}/seller]
 
 + Request
 
@@ -540,7 +540,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
 + Parameters
 
-    + `nfe-validation-id` (string, required) - Identificador da validação de nota fiscal.
+    + nfe_validation_id - Identificador da validação de nota fiscal.
 
 + Response 200 (application/xml)
 
@@ -595,7 +595,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
 + Response 404 (application/xml)
 
-### Consulta de dados de sacado [GET /v1/nfe-validations/{nfe-validation-id}/buyer]
+### Consulta de dados de sacado [GET /v1/nfe-validations/{nfe_validation_id}/buyer]
 
 + Request
 
@@ -605,7 +605,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
 + Parameters
 
-    + `nfe-validation-id` (string, required) - Identificador da validação de nota fiscal.
+    + nfe_validation_id - Identificador da validação de nota fiscal.
 
 + Response 200 (application/xml)
 
@@ -660,7 +660,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
 + Response 404 (application/xml)
 
-### Consulta das conclusões sobre uma validação de NF-e [GET /v1/nfe-validations/{nfe-validation-id}/conclusions]
+### Consulta das conclusões sobre uma validação de NF-e [GET /v1/nfe-validations/{nfe_validation_id}/conclusions]
 
 + Request
 
@@ -670,7 +670,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
 + Parameters
 
-    + `nfe-validation-id` (string, required) - Identificador da validação de nota fiscal.
+    + nfe_validation_id - Identificador da validação de nota fiscal.
 
 + Response 200 (application/xml)
 
