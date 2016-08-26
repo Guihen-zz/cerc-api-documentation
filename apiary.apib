@@ -1,9 +1,10 @@
 FORMAT: 1A
 HOST: http://cerc-api-staging.herokuapp.com/
 
-# CERC API
+# CERC API - Financiador
 
-A CERC API é uma plataforma para auxiliar os agentes financiadores e de registro a obter mais informações sobre as operações financeiras que têm recebíveis como lastro.
+A "CERC API - Financiador" é uma plataforma que oferece aos Agentes Financiadores habilitados junto à CERC um conjunto de serviços voltados para operações com recebíveis. Esses serviços compreendem o fornecimento de informações sobre os recebíveis, sobre os documentos fiscais a estes relacionados e sobre seus participantes.
+Estão disponíveis ainda serviços de consulta de informações sobre os recebíveis registrados na CERC associados ao Agente Financiador, inclusive o monitoramento da carteira.
 
 ## Formato da resposta
 
@@ -89,11 +90,13 @@ Para obter o `token` de acesso, consulta o endpoint de `Autenticação de usuár
               <description>Combinação de CPF e senha inválidos.</description>
             </response>
 
-## Validação de NF-e [/v1/nfe-validations]
+## Validação de NF-e em lote [/v1/nfe-validations]
 
-O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados existentes sobre cada nota fiscal presente no lote. Os dados considerados são os disponibilizados pelo serviço de consulta de notas fiscais da Secretaria da Fazenda e pelo serviço de consulta de CNPJ da Receita Federal. Sobre os dados encontrados na pesquisa, são aplicados algoritmos para verificar a elegibilidade do documento fiscal para uso como lastro de operação financeira de transferência de direitos creditórios. Os dados encontrados na consulta da nota fiscal e nas consultas dos participantes da operação mercantil, junto a Receita Federal, são armazenados por um determinado período de tempo e poderão ser consultados através de outro serviço que será descrito abaixo.
+Conjunto de serviços que compreende a busca dos dados das notas fiscais de um lote e de dados de seus participantes. O conjunto de informações compreende os dados disponibilizados pelo serviço de consulta de notas fiscais eletrônicas das Secretarias de Fazenda Estaduais e pelo serviço de consulta de CNPJ da Receita Federal.
+Sobre os dados encontrados nessas fontes, são aplicados algoritmos para verificar a elegibilidade dos recebíveis para uso como lastro de operações bancárias ou de securitização de direitos creditórios.
+Os dados obtidos a partir de cada consulta são armazenados por um determinado período e são fornecidos a partir do acionamento combinado dos serviços descritos abaixo.
 
-### Validação de NF-e em lote [POST]
+### Solicitação de validação de NF-e em lote [POST]
 
 + Attributes
 
@@ -156,7 +159,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
               </errors>
             </response>
 
-### Consulta de Status das validações de NF-e [GET /v1/nfe-validations{?agent_id,batch_ids,status,created_since,created_until,completed_since,completed_until,per_page,page}]
+### Consulta de status das validações de NF-e [GET /v1/nfe-validations{?agent_id,batch_ids,status,created_since,created_until,completed_since,completed_until,per_page,page}]
 
 + Request
 
@@ -660,7 +663,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
 + Response 404 (application/xml)
 
-### Consulta das conclusões sobre uma validação de NF-e [GET /v1/nfe-validations/{nfe_validation_id}/conclusions]
+### Consulta das constatações CERC [GET /v1/nfe-validations/{nfe_validation_id}/conclusions]
 
 + Request
 
@@ -708,58 +711,68 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
 + Response 404 (application/xml)
 
-## Registro Definitivo de Operações com Duplicata Mercantil [/v1/registro-definitivo-de-operacao-duplicata-mercantil]
+## Registro definitivo de operação com duplicata mercantil [/v1/registro-definitivo-de-operacao-duplicata-mercantil]
 
-Registrar uma operação recebível significa informar que irá performar uma operação financeira que tem como lastro seus direitos creditorios.
-Registrando uma operação com um recebível, o Agente garante que o mesmo recebível não será registrado para a operação de nenhum outro Agente na CERC.
-O Registro definitivo é o processo mais completo de registro de operação com recebiveis disponível na CERC. Este processo envolve a pesquisa dos dados disponíveis para a NF-e e os CNPJ de Cedente e Sacado, quem incluem dados sobre a operação, dados fiscais, de cobrança, informações fiscais dos participantes da operação, dados de transporte e outros.
+Ao registrar uma operação na CERC, o Agente Registrador deve informar à CERC os dados dos recebíveis que um Agente Financiador pretenda adquirir ou vincular como garantia de uma operação de crédito.
+Uma vez confirmado o registro pela CERC, os recebíveis estarão associados como lastro da operação do Agente Financiador indicado.
+Realizando o registro da operação com recebíveis na CERC, o Agente Financiador evita que o mesmo recebível seja cedido ou vinculado a operação de outro Agente Financiador habilitado junto à CERC.
+O Registro definitivo é um serviço que compreende o processo de validação de NFe como requisito. Assim, o registro não será realizado caso seja indicada uma chave de NF-e inválida, ou se identificada indisponibilidade do recebível ou inconsistências no documento fiscal associado.
 
 ### Registro definitivo de operações com duplicata mercantil [POST]
 
-Pendente de especificação.
+Aplicável ao Agente de Registro e pendente de especificação.
 
 ### Status de registro definitivo de operações com duplicata mercantil [GET /v1/registro-definitivo-de-operacao-com-duplicata-mercantil/status]
 
-Pendente de especificação.
+Aplicável ao Agente de Registro e pendente de especificação.
 
 ### Consulta de registro definitivo de operações com duplicata mercantil [GET /v1/registro-definitivo-de-operacao-duplicata-mercantil]
 
-Pendente de especificação.
+Pendente de especificação. Este serviço fornece os dados dos registros definitivos das operações com recebíveis realizadas pelo Agente Financiador.
 
-## Registro Provisório de Operações com Duplicata Mercantil [/v1/registro-provisorio-de-operacao-duplicata-mercantil]
+## Registro provisório de operação com duplicata mercantil [/v1/registro-provisorio-de-operacao-duplicata-mercantil]
 
-O Registro provisório de uma operação com duplicata mercantil é para os casos em que o agente decide performar uma operação financeira com lastro em um documento fiscal do qual ainda não possui a chave da nota fiscal, mas deseja reservar para si o direito imediatamente, com a atualização posterior do registro da operação, no momento em que for informado sobre a chave da nota.
-O registro provisório tem caráter transitório e não atesta a qualidade do recebível, mas apenas procura garantir a unicidade da posse do registro de uma operação sobre ele.
+O Registro provisório de operação com duplicata mercantil deve ser utilizado nos casos em que o Agente Financiador decide adquirir ou vincular como garantia um recebível de que não dispõe dos dados do documento fiscal correspondente.
+O registro provisório tem caráter transitório e não compreende a validação de documento fiscal. Serve somente para garantir a unicidade da propriedade (definitiva ou fiduciária) de um recebível, e deve ser posteriormente objeto de associação deste registro com um documento fiscal válido, para que se converta em um registro definitivo.
 
 ### Registro provisório de operações com duplicata mercantil [POST]
 
-Pendente de especificação
+Aplicável ao Agente de Registro e pendente de especificação.
 
 ### Status de registro provisório de operações com duplicata mercantil  [GET /v1/registro-provisorio-de-operacao-duplicata-mercantil/status]
 
-Pendente de especificação
+Aplicável ao Agente de Registro e pendente de especificação.
 
 ### Consulta de registros provisórios de operações com duplicata mercantil [GET /v1/registro-provisorio-de-operacao-duplicata-mercantil]
 
-Pendente de especificação
+Pendente de especificação. Este serviço fornece os dados dos registros provisórios das operações com recebíveis realizadas pelo Agente Financiador.
 
-## Atualização de um registro provisório de duplicata de NF-e [/registro-provisorio-em-lote/promover]
+## Associação de registro provisório de operação a NF-e [/registro-provisorio-em-lote/promover]
 
-A atualização de um registro provisório de uma operação com duplicata mercantil faz a associação de um ou mais recebíveis que possuam registros provisórios a uma ou mais NF-e que são a comprovação da operação que serve de lastro para a operação financeira
+A conversão de registro provisório de operação com duplicata mercantil em um registro definitivo ocorre por meio da indicação do documento fiscal associado ao recebível objeto do registro.
+O serviço realiza a associação de um ou mais recebíveis que possuam registros provisórios a uma ou mais NF-e.
 
-### Solicitação de promoção de registros provisorios em lote [POST]
+### Solicitação de atualização de registros provisórios em lote [POST]
 
-Pendente de especificação
+Pendente de especificação.
 
-### Consulta da solicitação de promoção de registros provisorios em lote [GET /registro-provisorio-em-lote/{protocolo}]
+### Consulta da solicitação de atualização de registros provisórios em lote [GET /registro-provisorio-em-lote/{protocolo}]
 
-Pendente de especificação
+Pendente de especificação.
 
 ## Acompanhamento da carteira
 
-### Consulta de novos dados das notas fiscais acompanhadas
+O conjunto de serviços de acompanhamento da carteira oferece como resultado os dados de monitoramento dos recebíveis registrados e ativos de um Agente Financiador.
+O monitoramento compreende as alterações nos documentos fiscais ocorridas a partir dos eventos a estes associados, bem como as mudanças nos dados dos participantes do recebível (emitente/cedente e devedor/sacado) constatadas a partir das consultas recorrentes as fontes de dados utilizadas pela CERC.
 
-Pendente de especificação
+
+### Consulta de novos dados das NF-e objeto de registro
+
+Pendente de especificação.
+
+### Consulta de novos dados dos participantes objeto de registro
+
+Pendente de especificação.
 
 # Data Structures
 
