@@ -153,7 +153,6 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
               <description>Parâmetros inválidos.</description>
               <errors type="array">
                 <error>agent_id não pode estar em branco</error>
-                <error>...</error>
               </errors>
             </response>
 
@@ -182,28 +181,24 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
             + `com_erro`
 
     + created_since (optional, string)
-        Tempo no formato iso8601, retorna todas as validações criadas desde o momento especificado.
-        + Default: Início do dia que foi feita a requisição.
+        Tempo no formato iso8601, retorna todas as validações criadas desde o momento especificado. Por padrão o valor é o início do dia que foi feita a requisição.
 
     + created_until (optional, string)
-        Tempo no formato iso8601, retorna todas as validações criadas até o momento especificado.
-        + Default: Momento corrente da requisição.
+        Tempo no formato iso8601, retorna todas as validações criadas até o momento especificado. Por padrão o valor é o momento corrente da requisição.
 
     + completed_since (optional, string)
-        Tempo no formato iso8601, retorna todas as validações completadas desde o momento especificado.
-        + Default: Início do dia que foi feita a requisição.
+        Tempo no formato iso8601, retorna todas as validações completadas desde o momento especificado. Por padrão o valor é o início do dia que foi feita a requisição.
 
     + completed_until (optional, string)
-        Tempo no formato iso8601, retorna todas as validações completadas até o momento especificado.
-        + Default: Momento corrente da requisição.
+        Tempo no formato iso8601, retorna todas as validações completadas até o momento especificado. Por padrão o valor é o momento corrente da requisição.
 
     + per_page (optional, number)
         Número máximo de registros que devem ser retornados por página. Deve ser um inteiro de `1` a `1000`.
-        + Default: `1000`.
+        + Default: `1000`
 
     + page (optional, number)
         Número da página que deve ser retornada. Deve ser um inteiro começando em `1`.
-        + Default: `1`.
+        + Default: `1`
 
 + Response 200 (application/xml)
 
@@ -787,11 +782,20 @@ Pendente de especificação
 
 + id (string) - Identificador da validação de nota fiscal.
 
-+ status (string) - Status atual da validação de nota fiscal.
++ status (enum[string])
+    Status atual da validação de nota fiscal.
+    Pode ter um dos seguintes valores:
+    + Members
+        + `pendente` - Pendente de processamento e obtenção de dados.
+        + `processando` - Obtenção de dados e processamento em andamento.
+        + `concluido` - Validação concluída.
+        + `com_erro` - Validação com erro que impede o resultado.
 
 + `agent-id` (string) - Identificador do agente associado a validação.
 
-+ `solicitated-date` (string) - Data no formato iso8601 da soliticação da validação de nota fiscal. Ou seja, data de solicitação da validação em lote a que essa validação está associada.
++ `created-date` (string) - Data no formato iso8601 em que a soliticação da validação foi criada. Ou seja, data de solicitação da validação em lote a que essa validação está associada.
+
++ `concluded-date` (string) - Data no formato iso8601 em que a validação de nota fiscal foi concluída.
 
 + `batch-id` (string) - Identificador do lote de validação de nota fiscal ao qual essa validação pertence.
 
@@ -799,13 +803,32 @@ Pendente de especificação
 
 + message (string) - Mensagem da conclusão.
 
-+ scope (string) - Escopo da conclusão.
++ scope (enum[string])
+    Escopo da conclusão.
+    Pode ter um dos seguintes valores:
+    + Members
+        + `dfe` - Documento fiscal.
+        + `participant` - Participante.
+        + `recebivel` - Recebível.
 
-+ dimension (string) - Dimensão da conclusão.
++ dimension (enum[string])
+    Dimensão da conclusão.
+    Pode ter um dos seguintes valores:
+    + Members
+        + `credit` - Crédito.
+        + `fiscal` - Fiscal.
+        + `logistic` - Logística.
+        + `mercantile` - Mercantil.
 
 + algorithm (string) - Algoritmo utilizado na conclusão.
 
-+ impact (string) - Impacto resultante da conclusão.
++ impact (enum[string])
+    Impacto resultante da conclusão.
+    Pode ter um dos seguintes valores:
+    + Members
+        + `negative` - Negativo.
+        + `neutral` - Neutro.
+        + `positive` - Positivo.
 
 + `nfe-key` (string) - Chave da nota referente a conclusão.
 
