@@ -5,28 +5,28 @@ HOST: http://cerc-api-staging.herokuapp.com/
 
 A CERC API é uma plataforma para auxiliar os agentes financiadores e de registro a obter mais informações sobre as operações financeiras que têm recebíveis como lastro.
 
-## Autenticação
-
-Para utilizar a API documentada, é necessário enviar o `token` de autenticação em toda requisição. Antes de fazer qualquer requisição para os endpoints documentados, consulte a sessão de autenticação para saber como obter o `token` de autenticação.
-
 ## Formato da resposta
 
-Para conseguir o formato da resposta da API em um determinado formato (XML ou JSON), deve ser colocado o formato ao final do `path`, da seguinte forma:
+Para obter o formato da resposta da API em um determinado formato (XML ou JSON), deve ser colocado o formato ao final do `path`, da seguinte forma:
 
 Por exemplo:
 
   - Para obter os dados em `json` do `/path/to/resource` ficaria `/path/to/resource.json`.
-  - Para obter os dados em `xml` do `/path/to/resource?params1=1231` ficaria `/path/to/resource.xml?params1=1231`.
+  - Para obter os dados em `xml` do `/path/to/resource?params=1231` ficaria `/path/to/resource.xml?params=1231`.
 
 Os formatos válidos no momento são `json` e `xml`.
 
+## Autenticação
+
+Para utilizar a API, é necessário enviar o `token` de acesso em toda requisição. Antes de fazer qualquer requisição para os endpoints documentados, consulte a sessão de autenticação para saber como obter o `token` de autenticação.
+
 ## Campo `type`
 
-Para envio de dados por xml, é importante que os atributos de `type` estejam presentes com os valores corretos. Ou seja, para indicar que um campo é `integer`, deve se adicionar o atributo `type="integer"`. O mesmo vale para campos do tipo `array`, `datetime` e `time`. Para os valores `string`, o atributo `type` é opcional, não influenciando no resultado.
+Para envio de dados por xml, é importante que os atributos de `type` estejam presentes com os valores corretos. Ou seja, para indicar que um campo é `integer`, deve se adicionar o atributo `type="integer"`. O mesmo vale para campos do tipo `array` e `time`. Para os valores `string`, o atributo `type` é opcional e não precisa ser adicionado.
 
 ## Múltiplos parâmetros em `query string`
 
-Em requisições com método `GET`, todos os parâmetros devem ser passados pela `query string`. Em caso de parâmetros que aceitem mais de um valor, ou seja, parâmetros que são `arrays`, elas devem ser enviadas no seguinte formato: `params[]=35&params[]=47&params[]=12`
+Em requisições com método `GET`, todos os parâmetros devem ser passados pela `query string`. Em caso de parâmetros que aceitem mais de um valor, ou seja, parâmetros que são `arrays`, elas devem ser enviadas no seguinte formato: `params[]=35&params[]=47&params[]=12`, que equivale a `params = [35, 47, 12]`.
 
 ## Autenticação [/v1/authentication]
 
@@ -120,40 +120,28 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
           </nfe-keys>
         </request>
 
-+ Response 200 (application/xml)
++ Response 202 (application/xml)
     Em caso de sucesso
 
     + Attributes(Response Base)
 
-        + `nfe-validation-bundle-id` (string) - Identificador da validação em lote da nota fiscal.
+        + `batch-id` (string) - Identificador do lote de validação de notas fiscais.
 
     + Body
 
             <?xml version="1.0" encoding="UTF-8"?>
             <response>
-              <code type="integer">200</code>
+              <code type="integer">202</code>
               <description>O lote foi aceito e será processado.</description>
-              <nfe-validation-bundle-id>57b77bd24f707366173a76e0</nfe-validation-bundle-id>
+              <batch-id>57b77bd24f707366173a76e0</batch-id>
             </response>
 
 
 + Response 400 (application/xml)
 
-    Formato inválido.
-
-    + Attributes(Response Base)
-
-    + Body
-
-            <?xml version="1.0" encoding="UTF-8"?>
-            <response>
-              <code type="integer">400</code>
-              <description>Formato inválido.</description>
-            </response>
-
 + Response 422 (application/xml)
 
-    Agente especificado não existe.
+    Parâmetros inválidos.
 
     + Attributes(Response Base)
 
@@ -162,10 +150,14 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
             <?xml version="1.0" encoding="UTF-8"?>
             <response>
               <code type="integer">422</code>
-              <description>Agente especificado não existe.</description>
+              <description>Parâmetros inválidos.</description>
+              <errors type="array">
+                <error>agent_id não pode estar em branco</error>
+                <error>...</error>
+              </errors>
             </response>
 
-### Consulta de Status das validações de NF-e [GET /v1/nfe-validations{?agent_id}{?by_bundle_ids[]}{?since_time}{?until_time}]
+### Consulta de Status das validações de NF-e [GET /v1/nfe-validations{?agent_id}{?batch_ids[]}{?status}{?created_since}{?created_until}{?completed_since}{?completed_until}{?per_page}{?page}]
 
 + Request
 
@@ -175,21 +167,47 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
 + Parameters
 
-    + agent_id (required, string) - Identificadores do agente financiador registrado no momento da criação de validação de nota fiscal.
+    + agent_id (optional, string)
+        Identificadores do agente financiador registrado no momento da criação de validação de nota fiscal.
 
-    + `by_bundle_ids[]` (optional, array[string]) - Identificadores dos lotes de validação de nota fiscal. Aceita múltiplos valores na forma: `?by_bundle_ids[]=35&by_bundle_ids[]=47&by_bundle_ids[]=12`
+    + `batch_ids[]` (optional, array[string])
+        Identificadores dos lotes de validação de nota fiscal. Aceita múltiplos valores na forma: `?batch_ids[]=35&batch_ids[]=47&batch_ids[]=12`
 
-    + since_time (optional, time) - Tempo no formato iso8601, para especificar a data mais antiga das validações desejadas.
+    + status (optional, string)
+        Filtra as validações pelo campo `status`. Sem esse valor, as validações retornadas podem ter qualquer `status`.
+        + Members
+            + `pendente`
+            + `processando`
+            + `concluido`
+            + `com_erro`
 
-    + until_time (optional, time) - Tempo no formato iso8601, para especificar a data mais recente das validações desejadas.
+    + created_since (optional, string)
+        Tempo no formato iso8601, retorna todas as validações criadas desde o momento especificado.
+        + Default: Início do dia que foi feita a requisição.
+
+    + created_until (optional, string)
+        Tempo no formato iso8601, retorna todas as validações criadas até o momento especificado.
+        + Default: Momento corrente da requisição.
+
+    + completed_since (optional, string)
+        Tempo no formato iso8601, retorna todas as validações completadas desde o momento especificado.
+        + Default: Início do dia que foi feita a requisição.
+
+    + completed_until (optional, string)
+        Tempo no formato iso8601, retorna todas as validações completadas até o momento especificado.
+        + Default: Momento corrente da requisição.
+
+    + per_page (optional, number)
+        Número máximo de registros que devem ser retornados por página. Deve ser um inteiro de `1` a `1000`.
+        + Default: `1000`.
+
+    + page (optional, number)
+        Número da página que deve ser retornada. Deve ser um inteiro começando em `1`.
+        + Default: `1`.
 
 + Response 200 (application/xml)
 
-    Em caso de sucesso, será retornado uma lista com as validações de nota fiscal que passarem no filtro dos parâmetros.
-
-    Cada validação contém os dados referente a validação de uma nota fiscal individual, ou seja, para cada nota enviada na criação de validação em lote.
-
-    Caso nenhum filtro opcional seja enviado, o filtro padrão aplicado. (QUAL O FILTRO PADRÃO?)
+    Em caso de sucesso, será retornado uma lista com as validações de nota fiscal filtradas pelos parâmetros.
 
     O campo `id` da validação só será adicionado quando o status da validação for `Concluido com sucesso`.
 
@@ -205,57 +223,33 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
               <description>Sucesso</description>
               <nfe-validations type="array">
                 <nfe-validation>
-                  <id>57b77bd24f707366173a76e0</id>
-                  <status>Pendente de captura de dados básicos</status>
+                  <status>pendente</status>
                   <agent-id>57b7876a4f707366173a76e1</agent-id>
-                  <emitter-cnpj>75.369.625/8166-71</emitter-cnpj>
-                  <receiver-cnpj>97.718.004/5909-41</receiver-cnpj>
                   <nfe-key>5316 0100 2346 2004 2270 0882 6906 4379 5156 7844 8973</nfe-key>
-                  <solicitated-date type="datetime">2016-08-19T13:27:53-03:00</solicitated-date>
+                  <created-date type="time">2016-08-19T13:27:53-03:00</created-date>
+                  <batch-id>57bf40534f70730471178b02</batch-id>
                 </nfe-validation>
                 <nfe-validation>
                   <id>57ab9abb4f707364d6c251ca</id>
-                  <status>Pendente de processamento dos dados básicos</status>
+                  <status>concluido</status>
                   <agent-id>57b7876a4f707366173a76e1</agent-id>
-                  <emitter-cnpj>75.369.625/8166-71</emitter-cnpj>
-                  <receiver-cnpj>97.718.004/5909-41</receiver-cnpj>
                   <nfe-key>5316 0100 2346 2004 2270 0882 6906 4379 5156 7844 8973</nfe-key>
-                  <solicitated-date type="datetime">2016-08-19T13:27:53-03:00</solicitated-date>
+                  <created-date type="time">2016-08-19T13:27:53-03:00</created-date>
+                  <completed-date type="time">2016-08-19T13:27:53-03:00</completed-date>
+                  <batch-id>57bf40534f70730471178b02</batch-id>
                 </nfe-validation>
                 <nfe-validation>
-                  <id>57ab9abb4f707364d6c251ca</id>
-                  <status>Falha na criação de validação</status>
+                  <status>com_erro</status>
                   <agent-id>57b7876a4f707366173a76e1</agent-id>
                   <nfe-key>53168973</nfe-key>
-                  <solicitated-date type="datetime">2016-08-19T13:27:53-03:00</solicitated-date>
+                  <created-date type="time">2016-08-19T13:27:53-03:00</created-date>
                   <errors type="array">
                     <error>Chave de nota fiscal inválida</error>
                     <error>Chave de nota fiscal com máscara inválida</error>
                   </errors>
+                  <batch-id>57bf40534f70730471178b02</batch-id>
                 </nfe-validation>
               </nfe-validations>
-            </response>
-
-+ Response 400 (application/xml)
-    Agente não especificado.
-
-    + Body
-
-            <?xml version="1.0" encoding="UTF-8"?>
-            <response>
-              <code type="integer">400</code>
-              <description>Agente não especificado.</description>
-            </response>
-
-+ Response 422 (application/xml)
-    Agente especificado não exite ou você não tem acesso as validações dele.
-
-    + Body
-
-            <?xml version="1.0" encoding="UTF-8"?>
-            <response>
-              <code type="integer">422</code>
-              <description>Agente especificado não exite ou você não tem acesso as validações dele.</description>
             </response>
 
 ### Consulta de dados da NF-e [GET /v1/nfe-validations/{nfe-validation-id}/nfe]
@@ -539,16 +533,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
               </nfe>
             </response>
 
-+ Response 422 (application/xml)
-    Validação não existe ou você não tem autorização de consultar seus dados.
-
-    + Body
-
-            <?xml version="1.0" encoding="UTF-8"?>
-            <response>
-              <code type="integer">422</code>
-              <description>Validação não existe ou você não tem autorização de consultar seus dados.</description>
-            </response>
++ Response 404 (application/xml)
 
 ### Consulta de dados de cedente [GET /v1/nfe-validations/{nfe-validation-id}/seller]
 
@@ -613,16 +598,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
               </participante>
             </response>
 
-+ Response 422 (application/xml)
-    Validação não existe ou você não tem autorização de consultar seus dados.
-
-    + Body
-
-            <?xml version="1.0" encoding="UTF-8"?>
-            <response>
-              <code type="integer">422</code>
-              <description>Validação não existe ou você não tem autorização de consultar seus dados.</description>
-            </response>
++ Response 404 (application/xml)
 
 ### Consulta de dados de sacado [GET /v1/nfe-validations/{nfe-validation-id}/buyer]
 
@@ -687,16 +663,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
               </participante>
             </response>
 
-+ Response 422 (application/xml)
-    Validação não existe ou você não tem autorização de consultar seus dados.
-
-    + Body
-
-            <?xml version="1.0" encoding="UTF-8"?>
-            <response>
-              <code type="integer">422</code>
-              <description>Validação não existe ou você não tem autorização de consultar seus dados.</description>
-            </response>
++ Response 404 (application/xml)
 
 ### Consulta das conclusões sobre uma validação de NF-e [GET /v1/nfe-validations/{nfe-validation-id}/conclusions]
 
@@ -730,7 +697,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
                   <algorithm>Algoritmo 1</algorithm>
                   <impact>positive</impact>
                   <nfe-key>1616 0172 3514 6459 2140 9595 6962 7754 2902 4102 8783</nfe-key>
-                  <concluded-date type="datetime">2016-08-19T13:27:53-03:00</concluded-date>
+                  <concluded-date type="time">2016-08-19T13:27:53-03:00</concluded-date>
                 </conclusion>
                 <conclusion>
                   <message>Dados estão incoerentes</message>
@@ -739,10 +706,12 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
                   <algorithm>Algoritmo 2</algorithm>
                   <impact>negative</impact>
                   <nfe-key>1616 0172 3514 6459 2140 9595 6962 7754 2902 4102 8783</nfe-key>
-                  <concluded-date type="datetime">2016-08-19T13:27:53-03:00</concluded-date>
+                  <concluded-date type="time">2016-08-19T13:27:53-03:00</concluded-date>
                 </conclusion>
               </conclusions>
             </response>
+
++ Response 404 (application/xml)
 
 ## Registro Definitivo de Operações com Duplicata Mercantil [/v1/registro-definitivo-de-operacao-duplicata-mercantil]
 
@@ -822,11 +791,9 @@ Pendente de especificação
 
 + `agent-id` (string) - Identificador do agente associado a validação.
 
-+ `seller-cnpj` (string) - CNPJ do cedente.
-
-+ `buyer-cnpj` (string) - CNPJ do sacado.
-
 + `solicitated-date` (string) - Data no formato iso8601 da soliticação da validação de nota fiscal. Ou seja, data de solicitação da validação em lote a que essa validação está associada.
+
++ `batch-id` (string) - Identificador do lote de validação de nota fiscal ao qual essa validação pertence.
 
 ## NfeValidationConclusion (object)
 
