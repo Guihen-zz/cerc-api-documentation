@@ -156,7 +156,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
               </errors>
             </response>
 
-### Consulta de Status das validações de NF-e [GET /v1/nfe-validations{?agent_id}{?batch_ids[]}{?status}{?created_since}{?created_until}{?completed_since}{?completed_until}{?per_page}{?page}]
+### Consulta de Status das validações de NF-e [GET /v1/nfe-validations{?agent_id}{?batch_ids}{?status}{?created_since}{?created_until}{?completed_since}{?completed_until}{?per_page}{?page}]
 
 + Request
 
@@ -169,7 +169,7 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
     + agent_id (optional, string)
         Identificadores do agente financiador registrado no momento da criação de validação de nota fiscal.
 
-    + `batch_ids[]` (optional, array[string])
+    + `batch_ids` (optional, string)
         Identificadores dos lotes de validação de nota fiscal. Aceita múltiplos valores na forma: `?batch_ids[]=35&batch_ids[]=47&batch_ids[]=12`
 
     + status (optional, string)
