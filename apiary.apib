@@ -95,12 +95,6 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
 ### Validação de NF-e em lote [POST]
 
-+ Request
-
-    + Headers
-
-            Authorization: Bearer {token}
-
 + Attributes
 
     + `agent-id` (string) - Identificador do agente financiador ao qual será associada a validação.
@@ -108,17 +102,23 @@ O serviço de validação de NF-e em lote realiza uma pesquisa sobre os dados ex
 
 + Request (application/xml)
 
-        <?xml version="1.0" encoding="UTF-8"?>
-        <request>
-          <agent-id>5791101d4f707323fc55ef89</agent-id>
-          <nfe-keys type="array">
-            <nfe-key>2616 0171 7587 1745 7358 8901 0461 0113 2569 8211 1855</nfe-key>
-            <nfe-key>1116 0162 3738 5963 8289 1490 9020 8969 3578 3754 2665</nfe-key>
-            <nfe-key>2316 0107 1775 6653 0603 3711 4166 4524 5887 8982 0029</nfe-key>
-            <nfe-key>5316 0100 2346 2004 2270 0882 6906 4379 5156 7844 8973</nfe-key>
-            <nfe-key>2416 0199 5643 8207 8924 4703 4983 7491 0132 1153 2500</nfe-key>
-          </nfe-keys>
-        </request>
+    + Headers
+
+            Authorization: Bearer {token}
+
+    + Body
+
+            <?xml version="1.0" encoding="UTF-8"?>
+            <request>
+              <agent-id>5791101d4f707323fc55ef89</agent-id>
+              <nfe-keys type="array">
+                <nfe-key>2616 0171 7587 1745 7358 8901 0461 0113 2569 8211 1855</nfe-key>
+                <nfe-key>1116 0162 3738 5963 8289 1490 9020 8969 3578 3754 2665</nfe-key>
+                <nfe-key>2316 0107 1775 6653 0603 3711 4166 4524 5887 8982 0029</nfe-key>
+                <nfe-key>5316 0100 2346 2004 2270 0882 6906 4379 5156 7844 8973</nfe-key>
+                <nfe-key>2416 0199 5643 8207 8924 4703 4983 7491 0132 1153 2500</nfe-key>
+              </nfe-keys>
+            </request>
 
 + Response 202 (application/xml)
     Em caso de sucesso
