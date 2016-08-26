@@ -3,74 +3,82 @@ HOST: http://cerc-api-staging.herokuapp.com/
 
 # CERC API - Financiador
 
-A "CERC API - Financiador" é uma plataforma que oferece aos Agentes Financiadores habilitados junto à CERC um conjunto de serviços voltados para operações com recebíveis. Esses serviços compreendem o fornecimento de informações sobre os recebíveis, sobre os documentos fiscais a estes relacionados e sobre seus participantes. 
+A "CERC API - Financiador" é uma plataforma que oferece aos Agentes Financiadores habilitados junto à CERC um conjunto de serviços voltados para operações com recebíveis. Esses serviços compreendem o fornecimento de informações sobre os recebíveis, sobre os documentos fiscais a estes relacionados e sobre seus participantes.
 Estão disponíveis ainda serviços de consulta de informações sobre os recebíveis registrados na CERC associados ao Agente Financiador, inclusive o monitoramento da carteira.
 
-## Validação de NF-e em lote [/v1/nfe-validations]
+## Formato da resposta
 
-Conjunto de serviços que compreende a busca dos dados das notas fiscais de um lote e de dados de seus participantes. O conjunto de informações compreende os dados disponibilizados pelo serviço de consulta de notas fiscais eletrônicas das Secretarias de Fazenda Estaduais e pelo serviço de consulta de CNPJ da Receita Federal. 
-Sobre os dados encontrados nessas fontes, são aplicados algoritmos para verificar a elegibilidade dos recebíveis para uso como lastro de operações bancárias ou de securitização de direitos creditórios. 
-Os dados obtidos a partir de cada consulta são armazenados por um determinado período e são fornecidos a partir do acionamento combinado dos serviços descritos abaixo.
+Para obter o formato da resposta da API em um determinado formato (XML ou JSON), deve ser colocado o formato ao final do `path`, da seguinte forma:
 
-### Solicitação de validação de NF-e em lote [POST]
+Por exemplo:
+
+  - Para obter os dados em `json` do `/path/to/resource` ficaria `/path/to/resource.json`.
+  - Para obter os dados em `xml` do `/path/to/resource?params=1231` ficaria `/path/to/resource.xml?params=1231`.
+
+Os formatos válidos no momento são `json` e `xml`.
+
+## Autenticação
+
+Para utilizar a API, é necessário enviar o `token` de acesso em toda requisição. Antes de fazer qualquer requisição para os endpoints documentados, consulte a sessão de autenticação para saber como obter o `token` de autenticação.
+
+## Campo `type`
+
+Para envio de dados por xml, é importante que os atributos de `type` estejam presentes com os valores corretos. Ou seja, para indicar que um campo é `integer`, deve se adicionar o atributo `type="integer"`. O mesmo vale para campos do tipo `array` e `time`. Para os valores `string`, o atributo `type` é opcional e não precisa ser adicionado.
+
+## Múltiplos parâmetros em `query string`
+
+Em requisições com método `GET`, todos os parâmetros devem ser passados pela `query string`. Em caso de parâmetros que aceitem mais de um valor, ou seja, parâmetros que são `arrays`, elas devem ser enviadas no seguinte formato: `params[]=35&params[]=47&params[]=12`, que equivale a `params = [35, 47, 12]`.
+
+## Autenticação [/v1/authentication]
+
+A maioria dos endpoints documentados requer que as requisições venham com o `token` de acesso no campo `Authorization` do `Headers` da requisição. Ou seja:
+
+`Authorization: Bearer {access-token}`
+
+Para obter o `token` de acesso, consulta o endpoint de `Autenticação de usuário de agente`.
+
+### Autenticação de usuário de agente [GET]
 
 + Attributes
 
-    + `agent-id` (string) - Identificador do agente.
-    + `nfe-keys` (array) - Lista de chaves de nota fiscais.
-        + `nfe-key` (string) - Chave de nota fiscal.
+    + cpf (string) - CPF do usuário de agente registrado no sistema. Deve estar com máscara no formato: `XXX.XXX.XXX-XX`.
+    + password (string) - Senha de acesso do usuário de agente associado ao CPF.
+    + type (string) - Tipo de usuário que deseja se autenticar. Para autenticação de usuário de agente, enviar o valor `agent_user`
 
 + Request (application/xml)
 
         <?xml version="1.0" encoding="UTF-8"?>
         <request>
-          <agent-id>5791101d4f707323fc55ef89</agent-id>
-          <nfe-keys type="array">
-            <nfe-key>2616 0171 7587 1745 7358 8901 0461 0113 2569 8211 1855</nfe-key>
-            <nfe-key>1116 0162 3738 5963 8289 1490 9020 8969 3578 3754 2665</nfe-key>
-            <nfe-key>2316 0107 1775 6653 0603 3711 4166 4524 5887 8982 0029</nfe-key>
-            <nfe-key>5316 0100 2346 2004 2270 0882 6906 4379 5156 7844 8973</nfe-key>
-            <nfe-key>2416 0199 5643 8207 8924 4703 4983 7491 0132 1153 2500</nfe-key>
-          </nfe-keys>
+          <cpf>073.008.792-17</cpf>
+          <password>123123123</password>
+          <type>agent_user</type>
         </request>
 
 + Response 200 (application/xml)
-    Em caso de sucesso
 
     + Attributes(Response Base)
 
-        + `nfe-validation-bundle` (object) - Representa o objeto de validação em lote da nota fiscal.
-          + `id` (string) - Identificador da validação em lote da nota fiscal.
-
-    + Body
-
-            <?xml version="1.0" encoding="UTF-8"?>
-            <response>
-              <code type="integer">100</code>
-              <description>O lote foi aceito e será processado.</description>
-              <success type="boolean">true</success>
-              <nfe-validation-bundle>
-                <id>57b77bd24f707366173a76e0</id>
-              </nfe-validation-bundle>
-            </response>
-
-
-+ Response 400 (application/xml)
-    Formato inválido
-
-    + Attributes(Response Base)
+        + `access-token` (string) - `Token` de autenticação que deve ser enviado nas requisições para os outros endpoints.
+        + `user` (Agent User)
 
     + Body
 
             <?xml version="1.0" encoding="UTF-8"?>
             <response>
               <code type="integer">200</code>
-              <description>Formato inválido.</description>
-              <success type="boolean">false</success>
+              <description>Sucesso</description>
+              <access-token>57b77bd24f707366173a76e0</access-token>
+              <user>
+                <name>Luiz Paulo</name>
+                <email>luiz.paulo@gmail.com</email>
+                <telephone-number>(11) 12345-1234</telephone-number>
+              </user>
             </response>
 
-+ Response 404 (application/xml)
-    Agente não existe
+
++ Response 422 (application/xml)
+
+    Caso o CPF não exista e/ou a senha não está de acordo com o CPF.
 
     + Attributes(Response Base)
 
@@ -78,22 +86,128 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
 
             <?xml version="1.0" encoding="UTF-8"?>
             <response>
-              <code type="integer">201</code>
-              <description>Agente não existe.</description>
-              <success type="boolean">false</success>
+              <code type="integer">422</code>
+              <description>Combinação de CPF e senha inválidos.</description>
             </response>
 
-### Consulta de status das validações de NF-e [GET /v1/nfe-validations{?by_bundle_ids}{?since_time}{?until_time}]
+## Validação de NF-e em lote [/v1/nfe-validations]
+
+Conjunto de serviços que compreende a busca dos dados das notas fiscais de um lote e de dados de seus participantes. O conjunto de informações compreende os dados disponibilizados pelo serviço de consulta de notas fiscais eletrônicas das Secretarias de Fazenda Estaduais e pelo serviço de consulta de CNPJ da Receita Federal.
+Sobre os dados encontrados nessas fontes, são aplicados algoritmos para verificar a elegibilidade dos recebíveis para uso como lastro de operações bancárias ou de securitização de direitos creditórios.
+Os dados obtidos a partir de cada consulta são armazenados por um determinado período e são fornecidos a partir do acionamento combinado dos serviços descritos abaixo.
+
+### Solicitação de validação de NF-e em lote [POST]
+
++ Attributes
+
+    + `agent-id` (string) - Identificador do agente financiador ao qual será associada a validação.
+    + `nfe-keys` (array[string]) - Lista de chaves de nota fiscais que se deseja validar. Cada chave de nota fiscal deve estar com máscara no formato: `"**** **** **** **** **** **** **** **** **** **** ****"`
+
++ Request (application/xml)
+
+    + Headers
+
+            Authorization: Bearer {token}
+
+    + Body
+
+            <?xml version="1.0" encoding="UTF-8"?>
+            <request>
+              <agent-id>5791101d4f707323fc55ef89</agent-id>
+              <nfe-keys type="array">
+                <nfe-key>2616 0171 7587 1745 7358 8901 0461 0113 2569 8211 1855</nfe-key>
+                <nfe-key>1116 0162 3738 5963 8289 1490 9020 8969 3578 3754 2665</nfe-key>
+                <nfe-key>2316 0107 1775 6653 0603 3711 4166 4524 5887 8982 0029</nfe-key>
+                <nfe-key>5316 0100 2346 2004 2270 0882 6906 4379 5156 7844 8973</nfe-key>
+                <nfe-key>2416 0199 5643 8207 8924 4703 4983 7491 0132 1153 2500</nfe-key>
+              </nfe-keys>
+            </request>
+
++ Response 202 (application/xml)
+    Em caso de sucesso
+
+    + Attributes(Response Base)
+
+        + `batch-id` (string) - Identificador do lote de validação de notas fiscais.
+
+    + Body
+
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">202</code>
+              <description>O lote foi aceito e será processado.</description>
+              <batch-id>57b77bd24f707366173a76e0</batch-id>
+            </response>
+
+
++ Response 400 (application/xml)
+
++ Response 422 (application/xml)
+
+    Parâmetros inválidos.
+
+    + Attributes(Response Base)
+
+    + Body
+
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">422</code>
+              <description>Parâmetros inválidos.</description>
+              <errors type="array">
+                <error>agent_id não pode estar em branco</error>
+              </errors>
+            </response>
+
+### Consulta de status das validações de NF-e [GET /v1/nfe-validations{?agent_id,batch_ids,status,created_since,created_until,completed_since,completed_until,per_page,page}]
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer {token}
 
 + Parameters
 
-    + by_bundle_ids (optional, array) - Identificadores dos lotes de validação de nota fiscal.
-        + id (string) - Identificador do lote de validação de nota fiscal.
-    + since_time (optional, time) - Filtro de tempo criação da validação, retorna todas as validações criadas desde o tempo especificado.
-    + until_time (optional, time) - Filtro de tempo criação da validação, retorna todas as validações criadas até o tempo especificado.
+    + agent_id (optional)
+        Identificadores do agente financiador registrado no momento da criação de validação de nota fiscal.
+
+    + `batch_ids` (optional)
+        Identificadores dos lotes de validação de nota fiscal. Aceita múltiplos valores na forma: `?batch_ids[]=35&batch_ids[]=47&batch_ids[]=12`
+
+    + status (optional)
+        Filtra as validações pelo campo `status`. Sem esse valor, as validações retornadas podem ter qualquer `status`.
+        + Members
+            + `pendente`
+            + `processando`
+            + `concluido`
+            + `com_erro`
+
+    + created_since (optional)
+        Tempo no formato iso8601, retorna todas as validações criadas desde o momento especificado. Por padrão o valor é o início do dia que foi feita a requisição.
+
+    + created_until (optional)
+        Tempo no formato iso8601, retorna todas as validações criadas até o momento especificado. Por padrão o valor é o momento corrente da requisição.
+
+    + completed_since (optional)
+        Tempo no formato iso8601, retorna todas as validações completadas desde o momento especificado. Por padrão o valor é o início do dia que foi feita a requisição.
+
+    + completed_until (optional)
+        Tempo no formato iso8601, retorna todas as validações completadas até o momento especificado. Por padrão o valor é o momento corrente da requisição.
+
+    + per_page (optional, number)
+        Número máximo de registros que devem ser retornados por página. Deve ser um inteiro de `1` a `1000`.
+        + Default: `1000`
+
+    + page (optional, number)
+        Número da página que deve ser retornada. Deve ser um inteiro começando em `1`.
+        + Default: `1`
 
 + Response 200 (application/xml)
-    Em caso de sucesso
+
+    Em caso de sucesso, será retornado uma lista com as validações de nota fiscal filtradas pelos parâmetros.
+
+    O campo `id` da validação só será adicionado quando o status da validação for `concluido`.
 
     + Attributes(Response Base)
 
@@ -103,66 +217,60 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
 
             <?xml version="1.0" encoding="UTF-8"?>
             <response>
-              <code type="integer">101</code>
-              <description>...</description>
-              <success type="boolean">true</success>
+              <code type="integer">200</code>
+              <description>Sucesso</description>
               <nfe-validations type="array">
                 <nfe-validation>
-                  <id>57b77bd24f707366173a76e0</id>
-                  <status>
-                    <code>100</code>
-                    <message>Pendente de captura de dados básicos</message>
-                  </status>
+                  <status>pendente</status>
                   <agent-id>57b7876a4f707366173a76e1</agent-id>
-                  <emitter-cnpj>75.369.625/8166-71</emitter-cnpj>
-                  <receiver-cnpj>97.718.004/5909-41</receiver-cnpj>
-                  <document-number>143160012650059</document-number>
                   <nfe-key>5316 0100 2346 2004 2270 0882 6906 4379 5156 7844 8973</nfe-key>
-                  <expiration-date type="datetime">2016-08-19T13:27:53-03:00</expiration-date>
+                  <created-date type="time">2016-08-19T13:27:53-03:00</created-date>
+                  <batch-id>57bf40534f70730471178b02</batch-id>
                 </nfe-validation>
                 <nfe-validation>
                   <id>57ab9abb4f707364d6c251ca</id>
-                  <status>
-                    <code>200</code>
-                    <message>Pendente de processamento de dados básicos</message>
-                  </status>
+                  <status>concluido</status>
                   <agent-id>57b7876a4f707366173a76e1</agent-id>
-                  <emitter-cnpj>75.369.625/8166-71</emitter-cnpj>
-                  <receiver-cnpj>97.718.004/5909-41</receiver-cnpj>
-                  <document-number>143160012650059</document-number>
-                  <expiration-date type="datetime">2016-08-19T13:27:53-03:00</expiration-date>
+                  <nfe-key>5316 0100 2346 2004 2270 0882 6906 4379 5156 7844 8973</nfe-key>
+                  <created-date type="time">2016-08-19T13:27:53-03:00</created-date>
+                  <completed-date type="time">2016-08-19T13:27:53-03:00</completed-date>
+                  <batch-id>57bf40534f70730471178b02</batch-id>
+                </nfe-validation>
+                <nfe-validation>
+                  <status>com_erro</status>
+                  <agent-id>57b7876a4f707366173a76e1</agent-id>
+                  <nfe-key>53168973</nfe-key>
+                  <created-date type="time">2016-08-19T13:27:53-03:00</created-date>
+                  <errors type="array">
+                    <error>Chave de nota fiscal inválida</error>
+                    <error>Chave de nota fiscal com máscara inválida</error>
+                  </errors>
+                  <batch-id>57bf40534f70730471178b02</batch-id>
                 </nfe-validation>
               </nfe-validations>
             </response>
 
-+ Response 400 (application/xml)
-    Formato inválido
+### Consulta de dados da NF-e [GET /v1/nfe-validations/{nfe_validation_id}/nfe]
 
-    + Body
++ Request
 
-            <?xml version="1.0" encoding="UTF-8"?>
-            <response>
-              <code type="integer">200</code>
-              <description>Formato inválido.</description>
-              <success type="boolean">false</success>
-            </response>
+    + Headers
 
-### Consulta de dados da NF-e [GET /v1/nfe-validations/{nfe-validation-id}/nfe]
+            Authorization: Bearer {token}
 
 + Parameters
 
-    + `nfe-validation-id` (string, required) - Identificador da validação de nota fiscal.
+    + nfe_validation_id - Identificador da validação de nota fiscal.
 
 + Response 200 (application/xml)
-    NFe pertencente a validação de nota fiscal
+    NFe pertencente a validação de nota fiscal.
 
     + Body
 
             <?xml version="1.0" encoding="UTF-8"?>
             <response>
               <code type="integer">200</code>
-              <description>Formato inválido.</description>
-              <success type="boolean">false</success>
+              <description>Sucesso</description>
               <nfe>
                 <chave-acesso>12-3456-78.909.876/5432-10-12-345-678.909.876-543.210.123-4</chave-acesso>
                 <cobranca>
@@ -423,34 +531,28 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
               </nfe>
             </response>
 
-+ Response 422 (application/xml)
-    NFe não pertence ao lote validado ou não existe.
++ Response 404 (application/xml)
 
-    + Body
+### Consulta de dados de cedente [GET /v1/nfe-validations/{nfe_validation_id}/seller]
 
-            <?xml version="1.0" encoding="UTF-8"?>
-            <response>
-              <code type="integer">204</code>
-              <description>Nfe não pertence a validação ou não existe.</description>
-              <success type="boolean">false</success>
-            </response>
++ Request
 
-### Consulta de dados de um participante [GET /v1/nfe-validations/{nfe-validation-id}/participants/{participant-cnpj}]
+    + Headers
+
+            Authorization: Bearer {token}
 
 + Parameters
-    + `nfe-validation-id` (string, required) - Identificador da validação de nota fiscal.
-    + `participant-cnpj` (string, required) - CNPJ do participante a ser consultado. Pode ser tanto o sacado quanto o cedente.
+
+    + nfe_validation_id - Identificador da validação de nota fiscal.
 
 + Response 200 (application/xml)
-    Caso o CNPJ do participante pertença a validação da nota fiscal.
 
     + Body
 
             <?xml version="1.0" encoding="UTF-8"?>
             <response>
-              <code type="integer">202</code>
-              <description>CNPJ inválido</description>
-              <success type="boolean">false</success>
+              <code type="integer">200</code>
+              <description>Sucesso</description>
               <participante>
                   <abertura-data>01/01/2001</abertura-data>
                   <atividade-economica>00.01-1-00 - Venda de equipamentos</atividade-economica>
@@ -494,35 +596,19 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
               </participante>
             </response>
 
-+ Response 422 (application/xml)
-    Caso o CNPJ do participante não pertença a validação da nfe
++ Response 404 (application/xml)
 
-    + Body
+### Consulta de dados de sacado [GET /v1/nfe-validations/{nfe_validation_id}/buyer]
 
-            <?xml version="1.0" encoding="UTF-8"?>
-            <response>
-              <code type="integer">202</code>
-              <description>CNPJ inválido</description>
-              <success type="boolean">false</success>
-            </response>
++ Request
 
-+ Response 406 (application/xml)
-    Caso o CNPJ do participante não pertença a nenhuma nfe do lote validado
-    Protocolo não informado
+    + Headers
 
-    + Body
-
-            <?xml version="1.0" encoding="UTF-8"?>
-            <response>
-              <code type="integer">203</code>
-              <description>CNPJ inválido</description>
-              <success type="boolean">false</success>
-            </response>
-
-### Consulta das constatações CERC [GET /v1/nfe-validations/{nfe-validation-id}/conclusions]
+            Authorization: Bearer {token}
 
 + Parameters
-    + `nfe-validation-id` (string, required) - Identificador da validação de nota fiscal.
+
+    + nfe_validation_id - Identificador da validação de nota fiscal.
 
 + Response 200 (application/xml)
 
@@ -530,9 +616,77 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
 
             <?xml version="1.0" encoding="UTF-8"?>
             <response>
-              <code type="integer">203</code>
-              <description>CNPJ inválido</description>
-              <success type="boolean">false</success>
+              <code type="integer">200</code>
+              <description>Sucesso</description>
+              <participante>
+                  <abertura-data>01/01/2001</abertura-data>
+                  <atividade-economica>00.01-1-00 - Venda de equipamentos</atividade-economica>
+                  <atividade-economica-secundaria>01.01-1-00 - Fabricação de equipamentos</atividade-economica-secundaria>
+                  <atividade-economica-secundaria-lista>01.01-1-00 - Fabricação de equipamentos</atividade-economica-secundaria-lista>
+                  <capital-social>R$ 1.000.000,00 (Um milhão de reais)</capital-social>
+                  <cnpj>12.098.345/7654-67</cnpj>
+                  <consulta-datahora>01/12/2016 16:00:00</consulta-datahora>
+                  <efr>*****</efr>
+                  <email></email>
+                  <endereco-bairro>AREA COMERCIAL</endereco-bairro>
+                  <endereco-cep>12.345-098</endereco-cep>
+                  <endereco-complemento>CONJUNTO 1010</endereco-complemento>
+                  <endereco-logradouro>CENTRAL DE RECURSOS</endereco-logradouro>
+                  <endereco-municipio>VALE MINERAL</endereco-municipio>
+                  <endereco-numero>39</endereco-numero>
+                  <endereco-uf>AC</endereco-uf>
+                  <matriz-filial>MATRIZ</matriz-filial>
+                  <natureza-juridica>206-2 - SOCIEDADE EMPRESARIA LIMITADA</natureza-juridica>
+                  <nome-fantasia>FABRICA BRASILEIRA</nome-fantasia>
+                  <normalizado-abertura-data>01/01/2001</normalizado-abertura-data>
+                  <normalizado-capital-social>1000000</normalizado-capital-social>
+                  <normalizado-cnpj>12098345765467</normalizado-cnpj>
+                  <normalizado-consulta-datahora>01/12/2016 16:00:00</normalizado-consulta-datahora>
+                  <normalizado-endereco-cep>12345098</normalizado-endereco-cep>
+                  <normalizado-situacao-cadastral-data>01/01/2005</normalizado-situacao-cadastral-data>
+                  <normalizado-situacao-especial-data></normalizado-situacao-especial-data>
+                  <qsa>
+                      <socio>
+                          <nome>JOAO BORGES</nome>
+                          <qualificacao>49-Sócio-Administrador</qualificacao>
+                      </socio>
+                  </qsa>
+                  <razao-social>INDUSTRIA E COMERCIO DE RECURSOS COMERCIAIS LTDA.</razao-social>
+                  <situacao-cadastral>ATIVA</situacaoC-cdastral>
+                  <situacao-cadastral-data>01/01/2005</situacao-cadastral-data>
+                  <situacao-cadastral-observacoes></situacao-cadastral-observacoes>
+                  <situacao-especial>********</situacao-especial>
+                  <situacao-especial-data>********</situacao-especial-data>
+                  <telefone>(01) 9283-74651</telefone>
+              </participante>
+            </response>
+
++ Response 404 (application/xml)
+
+### Consulta das constatações CERC [GET /v1/nfe-validations/{nfe_validation_id}/conclusions]
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer {token}
+
++ Parameters
+
+    + nfe_validation_id - Identificador da validação de nota fiscal.
+
++ Response 200 (application/xml)
+
+    + Attributes(Response Base)
+
+        + `conclusions` (array[NfeValidationConclusion]) - Lista de conslusões sobre a validação da nota fiscal.
+
+    + Body
+
+            <?xml version="1.0" encoding="UTF-8"?>
+            <response>
+              <code type="integer">200</code>
+              <description>Sucesso</description>
               <conclusions type="array">
                 <conclusion>
                   <message>Dados estão coerentes</message>
@@ -540,8 +694,8 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
                   <dimension>fiscal</dimension>
                   <algorithm>Algoritmo 1</algorithm>
                   <impact>positive</impact>
-                  <nfe-key>1234 ... 1234</nfe-key>
-                  <concluded-at type="datetime">2016-08-19T13:27:53-03:00</concluded-at>
+                  <nfe-key>1616 0172 3514 6459 2140 9595 6962 7754 2902 4102 8783</nfe-key>
+                  <concluded-date type="time">2016-08-19T13:27:53-03:00</concluded-date>
                 </conclusion>
                 <conclusion>
                   <message>Dados estão incoerentes</message>
@@ -549,15 +703,17 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
                   <dimension>fiscal</dimension>
                   <algorithm>Algoritmo 2</algorithm>
                   <impact>negative</impact>
-                  <nfe-key>1234 ... 1234</nfe-key>
-                  <concluded-at type="datetime">2016-08-19T13:27:53-03:00</concluded-at>
+                  <nfe-key>1616 0172 3514 6459 2140 9595 6962 7754 2902 4102 8783</nfe-key>
+                  <concluded-date type="time">2016-08-19T13:27:53-03:00</concluded-date>
                 </conclusion>
               </conclusions>
             </response>
 
++ Response 404 (application/xml)
+
 ## Registro definitivo de operação com duplicata mercantil [/v1/registro-definitivo-de-operacao-duplicata-mercantil]
 
-Ao registrar uma operação na CERC, o Agente Registrador deve informar à CERC os dados dos recebíveis que um Agente Financiador pretenda adquirir ou vincular como garantia de uma operação de crédito. 
+Ao registrar uma operação na CERC, o Agente Registrador deve informar à CERC os dados dos recebíveis que um Agente Financiador pretenda adquirir ou vincular como garantia de uma operação de crédito.
 Uma vez confirmado o registro pela CERC, os recebíveis estarão associados como lastro da operação do Agente Financiador indicado.
 Realizando o registro da operação com recebíveis na CERC, o Agente Financiador evita que o mesmo recebível seja cedido ou vinculado a operação de outro Agente Financiador habilitado junto à CERC.
 O Registro definitivo é um serviço que compreende o processo de validação de NFe como requisito. Assim, o registro não será realizado caso seja indicada uma chave de NF-e inválida, ou se identificada indisponibilidade do recebível ou inconsistências no documento fiscal associado.
@@ -576,7 +732,7 @@ Pendente de especificação. Este serviço fornece os dados dos registros defini
 
 ## Registro provisório de operação com duplicata mercantil [/v1/registro-provisorio-de-operacao-duplicata-mercantil]
 
-O Registro provisório de operação com duplicata mercantil deve ser utilizado nos casos em que o Agente Financiador decide adquirir ou vincular como garantia um recebível de que não dispõe dos dados do documento fiscal correspondente. 
+O Registro provisório de operação com duplicata mercantil deve ser utilizado nos casos em que o Agente Financiador decide adquirir ou vincular como garantia um recebível de que não dispõe dos dados do documento fiscal correspondente.
 O registro provisório tem caráter transitório e não compreende a validação de documento fiscal. Serve somente para garantir a unicidade da propriedade (definitiva ou fiduciária) de um recebível, e deve ser posteriormente objeto de associação deste registro com um documento fiscal válido, para que se converta em um registro definitivo.
 
 ### Registro provisório de operações com duplicata mercantil [POST]
@@ -626,25 +782,67 @@ Pendente de especificação.
 
 + description (string) - A descrição do código.
 
-+ success (boolean) - Se a resposta foi bem sucedida ou não.
 
+## Agent User (object)
+
++ name (string) - Identificador do usuário de agente.
+
++ email (string) - Email do usuário de agente.
+
++ `telephone-number` (string) - Telefone do usuário de agente. Vem com máscara no formato: `(XX) XXXXX-XXXX`
 
 ## NfeValidation (object)
 
 + id (string) - Identificador da validação de nota fiscal.
 
-+ status (object) - Objeto que representa o status da validação de nota fiscal.
-
-    + code (number) - Código que representa o status atual da validação de nota fiscal.
-
-    + message (string) - Descrição do código que representa o status atual da validação de nota fiscal.
++ status (enum[string])
+    Status atual da validação de nota fiscal.
+    Pode ter um dos seguintes valores:
+    + Members
+        + `pendente` - Pendente de processamento e obtenção de dados.
+        + `processando` - Obtenção de dados e processamento em andamento.
+        + `concluido` - Validação concluída.
+        + `com_erro` - Validação com erro que impede o resultado.
 
 + `agent-id` (string) - Identificador do agente associado a validação.
 
-+ `seller-cnpj` (string) - CNPJ do cedente.
++ `created-date` (string) - Data no formato iso8601 em que a soliticação da validação foi criada. Ou seja, data de solicitação da validação em lote a que essa validação está associada.
 
-+ `buyer-cnpj` (string) - CNPJ do sacado.
++ `concluded-date` (string) - Data no formato iso8601 em que a validação de nota fiscal foi concluída.
 
-+ `document-number` (string) - Número identificador da duplicata informado pelo cedente na emissão da nota.
++ `batch-id` (string) - Identificador do lote de validação de nota fiscal ao qual essa validação pertence.
 
-+ `expiration-date` (string) - Data de vencimento da duplicata.
+## NfeValidationConclusion (object)
+
++ message (string) - Mensagem da conclusão.
+
++ scope (enum[string])
+    Escopo da conclusão.
+    Pode ter um dos seguintes valores:
+    + Members
+        + `dfe` - Documento fiscal.
+        + `participant` - Participante.
+        + `recebivel` - Recebível.
+
++ dimension (enum[string])
+    Dimensão da conclusão.
+    Pode ter um dos seguintes valores:
+    + Members
+        + `credit` - Crédito.
+        + `fiscal` - Fiscal.
+        + `logistic` - Logística.
+        + `mercantile` - Mercantil.
+
++ algorithm (string) - Algoritmo utilizado na conclusão.
+
++ impact (enum[string])
+    Impacto resultante da conclusão.
+    Pode ter um dos seguintes valores:
+    + Members
+        + `negative` - Negativo.
+        + `neutral` - Neutro.
+        + `positive` - Positivo.
+
++ `nfe-key` (string) - Chave da nota referente a conclusão.
+
++ `concluded-date` (string) - Data no formato iso8601 em que a conclusão foi gerada.
