@@ -10,8 +10,6 @@ Estão disponíveis ainda serviços de consulta de informações sobre os receb�
 
 Para obter o formato da resposta da API em um determinado formato (XML ou JSON), deve ser colocado o formato ao final do `path`, da seguinte forma:
 
-Por exemplo:
-
   - Para obter os dados em `json` do `/path/to/resource` ficaria `/path/to/resource.json`.
   - Para obter os dados em `xml` do `/path/to/resource?params=1231` ficaria `/path/to/resource.xml?params=1231`.
 
@@ -19,7 +17,7 @@ Os formatos válidos no momento são `json` e `xml`.
 
 ## Autenticação
 
-Para utilizar a API, é necessário enviar o `token` de acesso em toda requisição. Antes de fazer qualquer requisição para os endpoints documentados, consulte a sessão de autenticação para saber como obter o `token` de autenticação.
+Para utilizar a API, é necessário enviar o `token` de acesso em toda requisição. Antes de fazer qualquer requisição para os endpoints desta documentação, consulte a sessão de autenticação e saiba como obter o `token` de autenticação.
 
 ## Campo `type`
 
@@ -27,17 +25,17 @@ Para envio de dados por xml, é importante que os atributos de `type` estejam pr
 
 ## Múltiplos parâmetros em `query string`
 
-Em requisições com método `GET`, todos os parâmetros devem ser passados pela `query string`. Em caso de parâmetros que aceitem mais de um valor, ou seja, parâmetros que são `arrays`, elas devem ser enviadas no seguinte formato: `params[]=35&params[]=47&params[]=12`, que equivale a `params = [35, 47, 12]`.
+Em requisições com método `GET`, todos os parâmetros devem ser passados pela `query string`. Em caso de parâmetros que aceitem mais de um valor, ou seja, parâmetros que são `arrays`, eles devem ser enviados no seguinte formato: `var1[]=35&var1[]=47&var1[]=12`, que equivale a `var1 = [35, 47, 12]`.
 
 ## Autenticação [/v1/authentication]
 
-A maioria dos endpoints documentados requer que as requisições venham com o `token` de acesso no campo `Authorization` do `Headers` da requisição. Ou seja:
+A maioria dos endpoints documentados requer que as requisições venham com um `token` de acesso no campo `Authorization` do `Headers` da requisição. Ou seja:
 
 `Authorization: Bearer {access-token}`
 
-Para obter o `token` de acesso, consulta o endpoint de `Autenticação de usuário de agente`.
+Para obter o `token` de acesso, consulte o endpoint de `Autenticação de usuário de agente`.
 
-### Autenticação de usuário de agente [GET]
+### Autenticação de usuário de agente [POST]
 
 + Attributes
 
@@ -45,14 +43,18 @@ Para obter o `token` de acesso, consulta o endpoint de `Autenticação de usuár
     + password (string) - Senha de acesso do usuário de agente associado ao CPF.
     + type (string) - Tipo de usuário que deseja se autenticar. Para autenticação de usuário de agente, enviar o valor `agent_user`
 
+
 + Request (application/xml)
 
-        <?xml version="1.0" encoding="UTF-8"?>
-        <request>
-          <cpf>073.008.792-17</cpf>
-          <password>123123123</password>
-          <type>agent_user</type>
-        </request>
+    + Body
+
+            <?xml version="1.0" encoding="UTF-8"?>
+            <request>
+              <cpf>073.008.792-17</cpf>
+              <password>123123123</password>
+              <type>agent_user</type>
+            </request>
+
 
 + Response 200 (application/xml)
 
@@ -76,6 +78,12 @@ Para obter o `token` de acesso, consulta o endpoint de `Autenticação de usuár
             </response>
 
 
++ Response 400 (application/xml)
+
+    Requisição Inválida
+
+    + Body
+
 + Response 422 (application/xml)
 
     Caso o CPF não exista e/ou a senha não está de acordo com o CPF.
@@ -91,12 +99,14 @@ Para obter o `token` de acesso, consulta o endpoint de `Autenticação de usuár
             </response>
 
 ## Validação de NF-e em lote [/v1/nfe-validations]
-
-Conjunto de serviços que compreende a busca dos dados das notas fiscais de um lote e de dados de seus participantes. O conjunto de informações compreende os dados disponibilizados pelo serviço de consulta de notas fiscais eletrônicas das Secretarias de Fazenda Estaduais e pelo serviço de consulta de CNPJ da Receita Federal.
+Conjunto de serviços que compreende a busca dos dados das notas fiscais de um lote e de dados de seus participantes (cedente e sacado). O conjunto de informações compreende os dados disponibilizados pelo serviço de consulta de notas fiscais eletrônicas das Secretarias de Fazenda Estaduais e pelo serviço de consulta de CNPJ da Receita Federal.
 Sobre os dados encontrados nessas fontes, são aplicados algoritmos para verificar a elegibilidade dos recebíveis para uso como lastro de operações bancárias ou de securitização de direitos creditórios.
 Os dados obtidos a partir de cada consulta são armazenados por um determinado período e são fornecidos a partir do acionamento combinado dos serviços descritos abaixo.
 
 ### Solicitação de validação de NF-e em lote [POST]
+
+Serviço para criar um pedido de validação para um lote de chaves de NF-e.
+
 
 + Attributes
 
@@ -142,6 +152,10 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
 
 + Response 400 (application/xml)
 
+    Requisição Inválida
+
+    + Body
+
 + Response 422 (application/xml)
 
     Parâmetros inválidos.
@@ -159,7 +173,33 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
               </errors>
             </response>
 
-### Consulta de status das validações de NF-e [GET /v1/nfe-validations{?agent_id,batch_ids,status,created_since,created_until,completed_since,completed_until,per_page,page}]
+### Consulta de status das validações de NF-e [POST /v1/nfe-validation-summaries{?agent_id,batch_ids,nfe_keys,status,created_since,created_until,completed_since,completed_until,per_page,page}]
+
+Serviço para consultar o status de processamento dos pedidos de validação para um lote de chaves de NF-e.
+As possíveis descrições de status são:
+
+| Código | Situação | Descrição |
+|----|----|----|
+| dados_processados | sucesso |  |
+| processamento_agendado | pendente |  |
+| coletando_dados | processando |  |
+| chave_nfe_invalida | erro | Chave da NF-e inválida |
+| falha_na_requisicao | erro | Falha na requisição de coleta de dados |
+| falha_na_requisicao | erro | Falha na validação dos parâmetros recebídos |
+| falha_na_requisicao | erro | Tentativas de coleta de dados excedidas |
+| falha_na_requisicao | erro | Falha em resolver um captcha |
+| falha_ao_obter_dados | erro | Dados incompletos na fonte |
+| falha_ao_obter_dados | erro | Dados não existem na fonte |
+| falha_na_requisicao | erro | Coleta bloqueada na fonte |
+| timeout | erro | Timeout no acesso a fonte |
+| timeout | erro | Fonte de dados indisponível |
+| timeout | erro | Sobrecarga no serviço de coleta |
+| timeout | erro | Sobrecarga na fonte de consultas |
+| erro_inesperado | erro | Erro interno inexperado |
+| erro_inesperado | erro | Falha ao salvar o log da coleta |
+| erro_inesperado_na_fonte | erro | Erro inexperado na fonte |
+| erro_permanente_na_fonte | erro | Erro permanente para esta consuta |
+
 
 + Request
 
@@ -167,33 +207,58 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
 
             Authorization: Bearer {token}
 
+    + Body
+
+            <?xml version="1.0" encoding="UTF-8"?>
+            <query>
+              <agent-id>ABCD12345</agent-id>
+              <batch-ids type="array">
+                <batch-id>AAA111</batch-id>
+                <batch-id>BBB222</batch-id>
+              </batch-ids>
+              <nfe-keys>
+                <nfe-key>XXXX XXXX ... XXXX</nfe-key>
+                <nfe-key>XXXX XXXX ... XXXX</nfe-key>
+              </nfe-keys>
+              <status>pending</status>
+              <created-since type="time">2016-07-31T08:15:30-05:00</created-since>
+              <created-until type="time">2016-08-01T08:15:30-05:00</created-until>
+              <completed-since type="time">2016-07-31T08:15:30-05:00</completed-since>
+              <completed-until type="time">2016-07-31T08:19:30-05:00</completed-until>
+              <per-page type="integer">500</per-page>
+              <page type="integer">2</page>
+            </query>
+
 + Parameters
 
     + agent_id (optional)
         Identificadores do agente financiador registrado no momento da criação de validação de nota fiscal.
 
     + `batch_ids` (optional)
-        Identificadores dos lotes de validação de nota fiscal. Aceita múltiplos valores na forma: `?batch_ids[]=35&batch_ids[]=47&batch_ids[]=12`
+        Identificadores dos lotes de validação de nota fiscal.
+
+    + `nfe_keys` (optional)
+        Identificadores das NF-e das validações de notas fiscais. Sem esse filtro, as validações retornadas podem estar relacionadas a qualquer nota fiscal.
 
     + status (optional)
-        Filtra as validações pelo campo `status`. Sem esse valor, as validações retornadas podem ter qualquer `status`.
+        Filtra as validações pelo campo `status`. Sem esse filtro, as validações retornadas podem ter qualquer `status`.
         + Members
             + `pendente`
             + `processando`
             + `concluido`
-            + `com_erro`
+            + `erro`
 
     + created_since (optional)
-        Tempo no formato iso8601, retorna todas as validações criadas desde o momento especificado. Por padrão o valor é o início do dia que foi feita a requisição.
+        Tempo no formato iso8601, retorna todas as validações criadas desde o momento especificado.
 
     + created_until (optional)
-        Tempo no formato iso8601, retorna todas as validações criadas até o momento especificado. Por padrão o valor é o momento corrente da requisição.
+        Tempo no formato iso8601, retorna todas as validações criadas até o momento especificado.
 
     + completed_since (optional)
-        Tempo no formato iso8601, retorna todas as validações completadas desde o momento especificado. Por padrão o valor é o início do dia que foi feita a requisição.
+        Tempo no formato iso8601, retorna todas as validações completadas desde o momento especificado.
 
     + completed_until (optional)
-        Tempo no formato iso8601, retorna todas as validações completadas até o momento especificado. Por padrão o valor é o momento corrente da requisição.
+        Tempo no formato iso8601, retorna todas as validações completadas até o momento especificado.
 
     + per_page (optional, number)
         Número máximo de registros que devem ser retornados por página. Deve ser um inteiro de `1` a `1000`.
@@ -205,13 +270,14 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
 
 + Response 200 (application/xml)
 
-    Em caso de sucesso, será retornado uma lista com as validações de nota fiscal filtradas pelos parâmetros.
+    Em caso de sucesso, será retornado uma lista com os status das validações de nota fiscal filtradas pelos parâmetros.
 
-    O campo `id` da validação só será adicionado quando o status da validação for `concluido`.
+    O campo `id` da validação só será adicionado quando a situação do status da validação for `concluido`.
+
 
     + Attributes(Response Base)
 
-        + `nfe-validations` (array[NfeValidation]) - Lista de validações de nota fiscal.
+        + `nfe-validations` (array[NfeValidation]) - Lista de status de validações de nota fiscal.
 
     + Body
 
@@ -221,7 +287,11 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
               <description>Sucesso</description>
               <nfe-validations type="array">
                 <nfe-validation>
-                  <status>pendente</status>
+                  <status>
+                    <code>processamento_agendado</code>
+                    <situation>pendente</situation>
+                    <description></description>
+                  </status>
                   <agent-id>57b7876a4f707366173a76e1</agent-id>
                   <nfe-key>5316 0100 2346 2004 2270 0882 6906 4379 5156 7844 8973</nfe-key>
                   <created-date type="time">2016-08-19T13:27:53-03:00</created-date>
@@ -229,7 +299,11 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
                 </nfe-validation>
                 <nfe-validation>
                   <id>57ab9abb4f707364d6c251ca</id>
-                  <status>concluido</status>
+                  <status>
+                    <code>dados_processados</code>
+                    <situation>concluido</situation>
+                    <description></description>
+                  </status>
                   <agent-id>57b7876a4f707366173a76e1</agent-id>
                   <nfe-key>5316 0100 2346 2004 2270 0882 6906 4379 5156 7844 8973</nfe-key>
                   <created-date type="time">2016-08-19T13:27:53-03:00</created-date>
@@ -237,20 +311,31 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
                   <batch-id>57bf40534f70730471178b02</batch-id>
                 </nfe-validation>
                 <nfe-validation>
-                  <status>com_erro</status>
+                  <status>
+                    <code>falha_na_requisicao</code>
+                    <situation>erro</situation>
+                    <description>Falha na validação dos parâmetros recebídos</description>
+                  </status>
                   <agent-id>57b7876a4f707366173a76e1</agent-id>
-                  <nfe-key>53168973</nfe-key>
+                  <nfe-key>5316 0100 2346 2004 2270 0882 6906 4379 5156 7844 8973</nfe-key>
                   <created-date type="time">2016-08-19T13:27:53-03:00</created-date>
-                  <errors type="array">
-                    <error>Chave de nota fiscal inválida</error>
-                    <error>Chave de nota fiscal com máscara inválida</error>
-                  </errors>
+                  <completed-date type="time">2016-08-19T13:27:53-03:00</completed-date>
                   <batch-id>57bf40534f70730471178b02</batch-id>
                 </nfe-validation>
               </nfe-validations>
             </response>
 
+
++ Response 400 (application/xml)
+
+    Requisição Inválida
+
+    + Body
+
+
 ### Consulta de dados da NF-e [GET /v1/nfe-validations/{nfe_validation_id}/nfe]
+
+Serviço para consultar os dados de uma NF-e coletados por uma validação de NF-e previamente solicitada.
 
 + Request
 
@@ -263,7 +348,7 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
     + nfe_validation_id - Identificador da validação de nota fiscal.
 
 + Response 200 (application/xml)
-    NFe pertencente a validação de nota fiscal.
+    Dados da NFe pertencente a validação de nota fiscal.
 
     + Body
 
@@ -533,7 +618,13 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
 
 + Response 404 (application/xml)
 
+    Recurso não encontrado
+
+    + Body
+
 ### Consulta de dados de cedente [GET /v1/nfe-validations/{nfe_validation_id}/seller]
+
+Serviço para consultar os dados do cedente de uma NF-e coletados no serviço de consulta de CNPJ da Receita Federal em decorrência de uma validação de NF-e previamente solicitada.
 
 + Request
 
@@ -597,9 +688,15 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
             </response>
 
 + Response 404 (application/xml)
+
+    Recurso não encontrado
+
+    + Body
 
 ### Consulta de dados de sacado [GET /v1/nfe-validations/{nfe_validation_id}/buyer]
 
+Serviço para consultar os dados do sacado de uma NF-e coletados no serviço de consulta de CNPJ da Receita Federal em decorrência de uma validação de NF-e previamente solicitada.
+
 + Request
 
     + Headers
@@ -663,7 +760,29 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
 
 + Response 404 (application/xml)
 
+    Recurso não encontrado
+
+    + Body
+
 ### Consulta das constatações CERC [GET /v1/nfe-validations/{nfe_validation_id}/conclusions]
+
+O serviço de consultas das constatações CERC sobre um recebível informa os resultados gerados pela execução dos algoritmos de análise que atestam a elegibilidade dos direitos creditórios, a consistência dos dados de cobrança, a não ocorrência de cancelamentos e a presença de uma serie de outras informações relacionadas a coerência do documento fiscal e de seus participantes.
+
+Os algoritmos de verificação existentes são:
+
+| Escopo       | Dimensão  | Algoritmo                                   |
+|--------------|-----------|---------------------------------------------|
+| NF-e         | Fiscal    | Situação do documento fiscal                |
+| NF-e         | Mercantil | Informação fiscal do destinatário           |
+| NF-e         | Logística | Indício de transporte                       |
+| NF-e         | Crédito   | Tempo até a validação                       |
+| NF-e         | Crédito   | Informações de pagamento                    |
+| Recebível    | Crédito   | Existência de registro de transação         |
+| Recebível    | Crédito   | Vigência das duplicatas                     |
+| NF-e         | Logística | Coerência do embarque                       |
+| Participante | Fiscal    | Regularidade fiscal dos participantes       |
+| Participante | Crédito   | Tempo de existência da empresa participante |
+| NF-e         | Crédito   | Elegibilidade da cessão                     |
 
 + Request
 
@@ -711,68 +830,9 @@ Os dados obtidos a partir de cada consulta são armazenados por um determinado p
 
 + Response 404 (application/xml)
 
-## Registro definitivo de operação com duplicata mercantil [/v1/registro-definitivo-de-operacao-duplicata-mercantil]
+    Recurso não encontrado
 
-Ao registrar uma operação na CERC, o Agente Registrador deve informar à CERC os dados dos recebíveis que um Agente Financiador pretenda adquirir ou vincular como garantia de uma operação de crédito.
-Uma vez confirmado o registro pela CERC, os recebíveis estarão associados como lastro da operação do Agente Financiador indicado.
-Realizando o registro da operação com recebíveis na CERC, o Agente Financiador evita que o mesmo recebível seja cedido ou vinculado a operação de outro Agente Financiador habilitado junto à CERC.
-O Registro definitivo é um serviço que compreende o processo de validação de NFe como requisito. Assim, o registro não será realizado caso seja indicada uma chave de NF-e inválida, ou se identificada indisponibilidade do recebível ou inconsistências no documento fiscal associado.
-
-### Registro definitivo de operações com duplicata mercantil [POST]
-
-Aplicável ao Agente de Registro e pendente de especificação.
-
-### Status de registro definitivo de operações com duplicata mercantil [GET /v1/registro-definitivo-de-operacao-com-duplicata-mercantil/status]
-
-Aplicável ao Agente de Registro e pendente de especificação.
-
-### Consulta de registro definitivo de operações com duplicata mercantil [GET /v1/registro-definitivo-de-operacao-duplicata-mercantil]
-
-Pendente de especificação. Este serviço fornece os dados dos registros definitivos das operações com recebíveis realizadas pelo Agente Financiador.
-
-## Registro provisório de operação com duplicata mercantil [/v1/registro-provisorio-de-operacao-duplicata-mercantil]
-
-O Registro provisório de operação com duplicata mercantil deve ser utilizado nos casos em que o Agente Financiador decide adquirir ou vincular como garantia um recebível de que não dispõe dos dados do documento fiscal correspondente.
-O registro provisório tem caráter transitório e não compreende a validação de documento fiscal. Serve somente para garantir a unicidade da propriedade (definitiva ou fiduciária) de um recebível, e deve ser posteriormente objeto de associação deste registro com um documento fiscal válido, para que se converta em um registro definitivo.
-
-### Registro provisório de operações com duplicata mercantil [POST]
-
-Aplicável ao Agente de Registro e pendente de especificação.
-
-### Status de registro provisório de operações com duplicata mercantil  [GET /v1/registro-provisorio-de-operacao-duplicata-mercantil/status]
-
-Aplicável ao Agente de Registro e pendente de especificação.
-
-### Consulta de registros provisórios de operações com duplicata mercantil [GET /v1/registro-provisorio-de-operacao-duplicata-mercantil]
-
-Pendente de especificação. Este serviço fornece os dados dos registros provisórios das operações com recebíveis realizadas pelo Agente Financiador.
-
-## Associação de registro provisório de operação a NF-e [/registro-provisorio-em-lote/promover]
-
-A conversão de registro provisório de operação com duplicata mercantil em um registro definitivo ocorre por meio da indicação do documento fiscal associado ao recebível objeto do registro.
-O serviço realiza a associação de um ou mais recebíveis que possuam registros provisórios a uma ou mais NF-e.
-
-### Solicitação de atualização de registros provisórios em lote [POST]
-
-Pendente de especificação.
-
-### Consulta da solicitação de atualização de registros provisórios em lote [GET /registro-provisorio-em-lote/{protocolo}]
-
-Pendente de especificação.
-
-## Acompanhamento da carteira
-
-O conjunto de serviços de acompanhamento da carteira oferece como resultado os dados de monitoramento dos recebíveis registrados e ativos de um Agente Financiador.
-O monitoramento compreende as alterações nos documentos fiscais ocorridas a partir dos eventos a estes associados, bem como as mudanças nos dados dos participantes do recebível (emitente/cedente e devedor/sacado) constatadas a partir das consultas recorrentes as fontes de dados utilizadas pela CERC.
-
-
-### Consulta de novos dados das NF-e objeto de registro
-
-Pendente de especificação.
-
-### Consulta de novos dados dos participantes objeto de registro
-
-Pendente de especificação.
+    + Body
 
 # Data Structures
 
@@ -791,18 +851,14 @@ Pendente de especificação.
 
 + `telephone-number` (string) - Telefone do usuário de agente. Vem com máscara no formato: `(XX) XXXXX-XXXX`
 
+
+
 ## NfeValidation (object)
 
 + id (string) - Identificador da validação de nota fiscal.
 
-+ status (enum[string])
++ status (NfeValidationStatus)
     Status atual da validação de nota fiscal.
-    Pode ter um dos seguintes valores:
-    + Members
-        + `pendente` - Pendente de processamento e obtenção de dados.
-        + `processando` - Obtenção de dados e processamento em andamento.
-        + `concluido` - Validação concluída.
-        + `com_erro` - Validação com erro que impede o resultado.
 
 + `agent-id` (string) - Identificador do agente associado a validação.
 
@@ -846,3 +902,31 @@ Pendente de especificação.
 + `nfe-key` (string) - Chave da nota referente a conclusão.
 
 + `concluded-date` (string) - Data no formato iso8601 em que a conclusão foi gerada.
+
+## NfeValidationStatus (object)
++ code  (enum[string])
+    Identificador normalizado do status.
+    Pode ter um dos seguintes valores:
+    + Members
+        + `erro_inesperado` - Um erro inesperado ocorreu e será analisado.
+        + `falha_na_requisicao` - Houve uma falha interna na construção da requisição para a coleta de dados.
+        + `timeout` - Timeout no serviço de coleta de dados.
+        + `falha_ao_obter_dados` - Dados incompletos ou inexistentes na fonte de coleta.
+        + `erro_inesperado_na_fonte` - A fonte da coleta de dados retornou um erro.
+        + `erro_permanente_na_fonte` - A fonte de dados retornou um erro permanente para essa consulta.
+        + `chave_nfe_invalida` - A chave de nota está inválida.
+        + `dados_processados` - Dados coletados e processados com sucesso, disponíveis para consulta.
+        + `processamento_agendado` - O serviço de coleta de dados foi agendado e será processado em breve.
+        + `coletando_dados` - O serviço de coleta de dados já foi iniciado.
+
++ situation (enum[string])
+    Estado em que a validação se encontra
+    Pode ter um dos seguintes valores:
+    + Members
+        + `pendente` - Pendente de processamento e obtenção de dados.
+        + `processando` - Obtenção de dados e processamento em andamento.
+        + `concluido` - Validação concluída.
+        + `erro` - Validação com erro que impede o resultado.
+
++ description (string)
+    Texto com mais detalhes sobre o status, usada apenas ara descrever status da situação erro
